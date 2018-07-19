@@ -1,6 +1,6 @@
 # Benchmarks
 
-[argv-lite](../README.md) vs. [mri](https://github.com/lukeed/mri), [yargs](https://github.com/yargs/yargs), [getopts](https://github.com/jorgebucaran/getopts) and [minimist](https://github.com/substack/minimist) benchmark results.
+[pargv-lite](../README.md) vs. [mri](https://github.com/lukeed/mri), [yargs](https://github.com/yargs/yargs), [getopts](https://github.com/jorgebucaran/getopts) and [minimist](https://github.com/substack/minimist) benchmark results.
 
 ## Run
 
@@ -16,10 +16,10 @@ npm i && node .
 - Node.js v10.7.0
 
 ```
-mri × 403,563 ops/sec
-yargs × 35,612 ops/sec
-getopts × 1,563,881 ops/sec
-minimist × 312,715 ops/sec
-argv-lite × 1,335,350 ops/sec
+mri × 394,782 ops/sec
+yargs × 34,095 ops/sec
+getopts × 1,521,811 ops/sec
+minimist × 302,338 ops/sec
+pargv-lite × 1,022,394 ops/sec
 ```
 

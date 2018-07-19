@@ -1,4 +1,4 @@
-# argv-lite
+# pargv-lite
 
 A simple & fast argv parser with option checking.
 
@@ -7,7 +7,7 @@ Provides an easy way to launch program with right options.
 ## Installation
 
 ```shell
-$ npm i argv-lite
+$ npm i pargv-lite
 ```
 
 ## Usage
@@ -17,7 +17,7 @@ $ npm i argv-lite
 ```javascript
 const BASENAME = require('path').basename(process.argv[1])
 const opts = (() => {
-  const parseArgv = require('argv-lite')
+  const parseArgv = require('pargv-lite')
   const options = {
     action: { def: true, set: ['n', 'dry-run'] },
     verbose: { def: false, set: ['v', 'verbose'] },
@@ -57,7 +57,7 @@ $ node demo -nnn file1 --verbose --mode=old -mnew -i- --include -- -- --help
 ### API
 
 ```javascript
-opts = require('argv-lite')(argv, options)
+opts = require('pargv-lite')(argv, options)
 ```
 
 **argv**: Argument vector, usually set to `process.argv.slice(2)`

@@ -3,8 +3,13 @@ const mri = require("mri")
 const yargs = require("yargs-parser")
 const getopts = require("getopts")
 const minimist = require("minimist")
-const argvlite = require("..") 
-const argvlite_options = require('./options')
+const pargvlite = require("..") 
+const pargvlite_options = {
+  super: { set: ['super'], def: '' },
+  lock: { set: ['no-lock'], def: true },
+  a: { set: ['a'], def: false },
+  ultra: { set: ['u', 'ultra'], def: [] },
+}
 
 const argv = ["--super=sonic", "--no-lock", "-au9000", "--", "game", "over"]
 
@@ -17,5 +22,5 @@ new Suite()
   .add("yargs", () => yargs(argv))
   .add("getopts", () => getopts(argv))
   .add("minimist", () => minimist(argv))
-  .add("argv-lite", () => argvlite(argv, argvlite_options))
+  .add("pargv-lite", () => pargvlite(argv, pargvlite_options))
   .run()

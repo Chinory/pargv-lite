@@ -1,11 +1,11 @@
 {
-  "name": "argv-lite",
+  "name": "pargv-lite",
   "version": "1.0.0",
   "description": "A simple & fast argv parser with option checking.",
   "main": "index.js",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/chinory/node-argv-lite.git"
+    "url": "git+https://github.com/chinory/node-pargv-lite.git"
   },
   "keywords": [
     "parse",
@@ -15,9 +15,9 @@
   "author": "Chinory",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/chinory/node-argv-lite/issues"
+    "url": "https://github.com/chinory/node-pargv-lite/issues"
   },
-  "homepage": "https://github.com/chinory/node-argv-lite#readme",
+  "homepage": "https://github.com/chinory/node-pargv-lite#readme",
   "engines": {
     "node": ">=4.0.0"
   }
