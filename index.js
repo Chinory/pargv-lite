@@ -3,7 +3,13 @@ module.exports = function parseArgv (argv, options) {
   const opts = {_: []}
   const names = {}
   for (const opt in options) {
-    opts[opt] = options[opt].def
+    if (typeof options[opt].def === 'boolean' || options[opt].def instanceof Array) {
+      opts[opt] = options[opt].def
+    } else if (options[opt].def instanceof Object) {
+      opts[opt] = null
+    } else {
+      opts[opt] = options[opt].def
+    }
     for (const name of options[opt].use) {
       names[name] = opt
     }
@@ -15,7 +21,7 @@ module.exports = function parseArgv (argv, options) {
       if (cur[1] === '-') {
         if (cur.length === 2) {
           if (optNeedArg) {
-            if (opts[optNeedArg] instanceof Array) {
+            if (options[optNeedArg].def instanceof Array) {
               opts[optNeedArg].push(cur)
             } else {
               opts[optNeedArg] = cur
@@ -34,7 +40,7 @@ module.exports = function parseArgv (argv, options) {
             const name = cur.slice(2)
             const opt = names[name]
             if (opt) {
-              if (typeof opts[opt] === 'boolean') {
+              if (typeof options[opt].def === 'boolean') {
                 opts[opt] = !options[opt].def
               } else {
                 optNeedArg = opt
@@ -47,9 +53,9 @@ module.exports = function parseArgv (argv, options) {
             const name = cur.slice(2, eq)
             const opt = names[name]
             if (opt) {
-              if (typeof opts[opt] === 'boolean') {
+              if (typeof options[opt].def === 'boolean') {
                 opts[opt] = !options[opt].def
-              } else if (opts[opt] instanceof Array) {
+              } else if (options[opt].def instanceof Array) {
                 opts[opt].push(cur.slice(eq + 1))
               } else {
                 opts[opt] = cur.slice(eq + 1)
@@ -62,7 +68,7 @@ module.exports = function parseArgv (argv, options) {
       } else {
         if (cur.length === 1) {
           if (optNeedArg) {
-            if (opts[optNeedArg] instanceof Array) {
+            if (options[optNeedArg].def instanceof Array) {
               opts[optNeedArg].push(cur)
             } else {
               opts[optNeedArg] = cur
@@ -80,10 +86,10 @@ module.exports = function parseArgv (argv, options) {
             const name = cur[j]
             const opt = names[name]
             if (opt) {
-              if (typeof opts[opt] === 'boolean') {
+              if (typeof options[opt].def === 'boolean') {
                 opts[opt] = !options[opt].def
               } else {
-                if (opts[opt] instanceof Array) {
+                if (options[opt].def instanceof Array) {
                   opts[opt].push(cur.slice(j + 1))
                 } else {
                   opts[opt] = cur.slice(j + 1)
@@ -99,7 +105,7 @@ module.exports = function parseArgv (argv, options) {
             const name = cur[last]
             const opt = names[name]
             if (opt) {
-              if (typeof opts[opt] === 'boolean') {
+              if (typeof options[opt].def === 'boolean') {
                 opts[opt] = !options[opt].def
               } else {
                 optNeedArg = opt
@@ -113,7 +119,7 @@ module.exports = function parseArgv (argv, options) {
       }
     } else {
       if (optNeedArg) {
-        if (opts[optNeedArg] instanceof Array) {
+        if (options[optNeedArg].def instanceof Array) {
           opts[optNeedArg].push(cur)
         } else {
           opts[optNeedArg] = cur
@@ -127,8 +133,8 @@ module.exports = function parseArgv (argv, options) {
   if (optNeedArg) {
     throw new Error(`missing option argument -- ${nameNeedArg}`)
   }
-  for (const nopt = opts._; i < argv.length; ++i) {
-    nopt.push(argv[i])
+  for (const _ = opts._; i < argv.length; ++i) {
+    _.push(argv[i])
   }
   return opts
 }
