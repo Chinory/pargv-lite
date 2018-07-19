@@ -26,6 +26,9 @@ module.exports = function parseArgv (argv, options) {
             break
           }
         } else {
+          if (optNeedArg) {
+            throw new Error(`missing option argument -- ${nameNeedArg}`)
+          }
           const eq = cur.indexOf('=', 2)
           if (eq === -1) {
             const name = cur.slice(2)
