@@ -1,0 +1,24 @@
+{
+  "name": "pargv",
+  "version": "1.0.0",
+  "description": "Parse argv.",
+  "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/chinory/node-pargv.git"
+  },
+  "keywords": [
+    "parse",
+    "argv",
+    "getopts"
+  ],
+  "author": "Chinory",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/chinory/node-pargv/issues"
+  },
+  "homepage": "https://github.com/chinory/node-pargv#readme",
+  "engines": {
+    "node": ">=4.0.0"
+  }
+}
