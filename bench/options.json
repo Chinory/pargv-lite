@@ -1,0 +1,6 @@
+{
+  "super": { "def": "", "use": ["super"] },
+  "a": { "def": false, "use": ["a"] },
+  "ultra": { "def": "", "use": ["u", "ultra"] },
+  "lock": { "def": true, "use": ["no-lock"] }
+}

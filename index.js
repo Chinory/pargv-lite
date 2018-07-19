@@ -10,18 +10,19 @@ module.exports = function parseArgv (argv, options) {
   }
   let i, optNeedArg, nameNeedArg
   for (i = 0; i < argv.length; ++i) {
-    if (argv[i].startsWith('-')) {
+    const cur = argv[i]
+    if (cur.startsWith('-')) {
       if (optNeedArg) {
         throw new Error(`missing option argument -- ${nameNeedArg}`)
       }
-      if (argv[i].startsWith('--')) {
-        if (argv[i].length === 2) {
+      if (cur.startsWith('-', 1)) {
+        if (cur.length === 2) {
           ++i
           break
         } else {
-          const eq = argv[i].indexOf('=', 2)
+          const eq = cur.indexOf('=', 2)
           if (eq === -1) {
-            const name = argv[i].slice(2)
+            const name = cur.slice(2)
             const opt = names[name]
             if (opt) {
               if (typeof opts[opt] === 'boolean') {
@@ -34,15 +35,15 @@ module.exports = function parseArgv (argv, options) {
               throw new Error(`invalid option -- ${name}`)
             }
           } else {
-            const name = argv[i].slice(2, eq)
+            const name = cur.slice(2, eq)
             const opt = names[name]
             if (opt) {
               if (typeof opts[opt] === 'boolean') {
                 opts[opt] = !options[opt].def
               } else if (opts[opt] instanceof Array) {
-                opts[opt].push(argv[i].slice(eq + 1))
+                opts[opt].push(cur.slice(eq + 1))
               } else {
-                opts[opt] = argv[i].slice(eq + 1)
+                opts[opt] = cur.slice(eq + 1)
               }
             } else {
               throw new Error(`invalid option -- ${name}`)
@@ -50,19 +51,28 @@ module.exports = function parseArgv (argv, options) {
           }
         }
       } else {
-        for (const name of argv[i].slice(1, -1)) {
+        let last = cur.length - 1
+        for (let j = 1; j < last; ++j) {
+          const name = cur[j]
           const opt = names[name]
           if (opt) {
             if (typeof opts[opt] === 'boolean') {
               opts[opt] = !options[opt].def
             } else {
-              throw new Error(`missing option argument -- ${name}`)
+              if (opts[opt] instanceof Array) {
+                opts[opt].push(cur.slice(j + 1))
+              } else {
+                opts[opt] = cur.slice(j + 1)
+              }
+              last = undefined
+              break
             }
           } else {
             throw new Error(`invalid option -- ${name}`)
           }
         }
-        for (const name of argv[i].slice(-1)) {
+        if (last) {
+          const name = cur[last]
           const opt = names[name]
           if (opt) {
             if (typeof opts[opt] === 'boolean') {
@@ -78,20 +88,20 @@ module.exports = function parseArgv (argv, options) {
       }
     } else if (optNeedArg) {
       if (opts[optNeedArg] instanceof Array) {
-        opts[optNeedArg].push(argv[i])
+        opts[optNeedArg].push(cur)
       } else {
-        opts[optNeedArg] = argv[i]
+        opts[optNeedArg] = cur
       }
       optNeedArg = undefined
     } else {
-      opts._.push(argv[i])
+      opts._.push(cur)
     }
   }
   if (optNeedArg) {
     throw new Error(`missing option argument -- ${nameNeedArg}`)
   }
   for (const nopt = opts._; i < argv.length; ++i) {
-    nopt.push(arg[i])
+    nopt.push(argv[i])
   }
   return opts
 }

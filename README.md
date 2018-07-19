@@ -1,6 +1,6 @@
 # pargv
 
-A redesigned Node.js CLI options parser, fast, lightweight and gracefully. 
+A redesigned Node.js CLI options parser, fast and lightweight, provides an easy way to launch a CLI program.
 
 ## Installation
 
@@ -64,7 +64,7 @@ The `def` means define and default. Pargv only supports three basic types of opt
 
 ### Have a try
 
-Change directory to the package's root then:
+Change directory to the repository's root then:
 
 ```shell
 $ node demo
