@@ -5,7 +5,7 @@ const BASENAME = require('path').basename(process.argv[1])
 const opts = (() => {
   const parseArgv = require('.')
   const options = {
-    action: { set: ['n', 'dry-run'], def: true },
+    action: { set: ['n', 'dry-run'], unset: ['a', 'action'], def: true },
     verbose: { set: ['v', 'verbose'], def: false },
     mode: { set: ['m', 'mode'], def: 'default' },
     includes: { set: ['i', 'include'], def: [] },
@@ -30,13 +30,13 @@ const opts = (() => {
       }}
     }}
   }
-  try {
+  // try {
     return parseArgv(process.argv.slice(2), options)
-  } catch (err) {
-    console.error(`${BASENAME}: ${err.message}`)
-    console.error(`Try '${BASENAME} --help' for more information.`)
-    process.exit(1)
-  }
+  // } catch (err) {
+  //   console.error(`${BASENAME}: ${err.message}`)
+  //   console.error(`Try '${BASENAME} --help' for more information.`)
+  //   process.exit(1)
+  // }
 })()
 
 const pkg = require('./package')

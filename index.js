@@ -2,9 +2,10 @@
 module.exports = function parseArgv (argv, options, modePath = '') {
   const opts = {_: []}
   const names = {}
+  const names_unset = {}
   for (const opt in options) {
-    if (typeof options[opt].def === 'boolean' || options[opt].def instanceof Array) {
-      opts[opt] = options[opt].def
+    if (options[opt].def instanceof Array) {
+      opts[opt] = options[opt].def.slice()
     } else if (options[opt].def instanceof Object) {
       opts[opt] = null
     } else {
@@ -12,6 +13,11 @@ module.exports = function parseArgv (argv, options, modePath = '') {
     }
     for (const name of options[opt].set) {
       names[name] = opt
+    }
+    if (options[opt].unset) {
+      for (const name of options[opt].unset) {
+        names_unset[name] = opt
+      }
     }
   }
   let i, optNeedArg, nameNeedArg
@@ -53,14 +59,19 @@ module.exports = function parseArgv (argv, options, modePath = '') {
                 nameNeedArg = name
               }
             } else {
-              throw new Error(`${modePath}invalid option -- ${name}`)
+              const opt_unset = names_unset[name]
+              if (opt_unset) {
+                opts[opt_unset] = options[opt_unset].def
+              } else {
+                throw new Error(`${modePath}invalid option -- ${name}`)
+              }
             }
           } else {
             const name = cur.slice(2, eq)
             const opt = names[name]
             if (opt) {
               if (typeof options[opt].def === 'boolean') {
-                opts[opt] = !options[opt].def
+                throw new Error(`${modePath}can not set value of boolean option -- ${name}`)
               } else if (options[opt].def instanceof Array) {
                 opts[opt].push(cur.slice(eq + 1))
               } else if (options[opt].def instanceof Object) {
@@ -69,7 +80,12 @@ module.exports = function parseArgv (argv, options, modePath = '') {
                 opts[opt] = cur.slice(eq + 1)
               }
             } else {
-              throw new Error(`${modePath}invalid option -- ${name}`)
+              const opt_unset = names_unset[name]
+              if (opt_unset) {
+                throw new Error(`${modePath}can not set value of unset option -- ${name}`)
+              } else {
+                throw new Error(`${modePath}invalid option -- ${name}`)
+              }
             }
           }
         }
@@ -108,7 +124,12 @@ module.exports = function parseArgv (argv, options, modePath = '') {
                 break
               }
             } else {
-              throw new Error(`${modePath}invalid option -- ${name}`)
+              const opt_unset = names_unset[name]
+              if (opt_unset) {
+                opts[opt_unset] = options[opt_unset].def
+              } else {
+                throw new Error(`${modePath}invalid option -- ${name}`)
+              }
             }
           }
           if (last) {
@@ -125,7 +146,12 @@ module.exports = function parseArgv (argv, options, modePath = '') {
                 nameNeedArg = name
               }
             } else {
-              throw new Error(`${modePath}invalid option -- ${name}`)
+              const opt_unset = names_unset[name]
+              if (opt_unset) {
+                opts[opt_unset] = options[opt_unset].def
+              } else {
+                throw new Error(`${modePath}invalid option -- ${name}`)
+              }
             }
           }
         }
