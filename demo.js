@@ -3,8 +3,16 @@
 const BASENAME = require('path').basename(process.argv[1])
 
 const opts = (() => {
-  const options = require('./options')
-  const parseArgv = require('..')
+  const parseArgv = require('.')
+  const options = {
+    action: { def: true, use: ['n', 'dry-run'] },
+    verbose: { def: false, use: ['v', 'verbose'] },
+    mode: { def: 'default', use: ['m', 'mode'] },
+    includes: { def: [], use: ['i', 'include'] },
+    unopened_option: { def: false, use: [] },
+    help: { def: false, use: ['h', 'help'] },
+    version: { def: false, use: ['version'] }
+  }
   try {
     return parseArgv(process.argv.slice(2), options)
   } catch (err) {
@@ -14,11 +22,9 @@ const opts = (() => {
   }
 })()
 
-const pkg = require('../package')
+const pkg = require('./package')
 if (opts.help) {
-  const options = require('./options')
   console.log(`Usage: ${BASENAME} [OPTIONS]`)
-  console.log(options)
 } else if (opts.version) {
   console.log(`${pkg.name} ${pkg.version}`)
 } else {

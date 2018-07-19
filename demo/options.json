@@ -1,8 +1,0 @@
-{
-  "true": { "def": false, "use": ["t", "true"] },
-  "false": { "def": true, "use": ["f", "false"] },
-  "str": { "def": "default", "use": ["s", "str"] },
-  "strs": { "def": ["default"], "use": ["S", "strs"] },
-  "help": { "def": false, "use": ["h", "help"] },
-  "version": { "def": false, "use": ["version"] }
-}
