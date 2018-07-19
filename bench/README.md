@@ -1,6 +1,6 @@
 # Benchmarks
 
-[Pargv](../README.md) vs. [mri](https://github.com/lukeed/mri), [yargs](https://github.com/yargs/yargs),  [minimist](https://github.com/substack/minimist) and [getopts](https://github.com/jorgebucaran/getopts) benchmark results.
+[pargv](../README.md) vs. [mri](https://github.com/lukeed/mri), [yargs](https://github.com/yargs/yargs), [getopts](https://github.com/jorgebucaran/getopts) and [minimist](https://github.com/substack/minimist) benchmark results.
 
 ## Run
 
