@@ -11,8 +11,8 @@ module.exports = function parseArgv (argv, options) {
   let i, optNeedArg, nameNeedArg
   for (i = 0; i < argv.length; ++i) {
     const cur = argv[i]
-    if (cur.startsWith('-')) {
-      if (cur.startsWith('-', 1)) {
+    if (cur[0] === '-') {
+      if (cur[1] === '-') {
         if (cur.length === 2) {
           if (optNeedArg) {
             if (opts[optNeedArg] instanceof Array) {

@@ -16,10 +16,10 @@ npm i && node .
 - Node.js v10.7.0
 
 ```
-mri × 369,246 ops/sec
-yargs × 33,532 ops/sec
-getopts × 1,603,122 ops/sec
-minimist × 291,907 ops/sec
-pargv × 1,034,929 ops/sec
+mri × 371,267 ops/sec
+yargs × 34,039 ops/sec
+getopts × 1,590,231 ops/sec
+minimist × 284,519 ops/sec
+pargv × 1,425,378 ops/sec
 ```
 
