@@ -12,22 +12,19 @@ module.exports = function parseArgv (argv, options) {
   for (i = 0; i < argv.length; ++i) {
     const cur = argv[i]
     if (cur.startsWith('-')) {
-      if (optNeedArg) {
-        if (cur.length === 1) {
-          if (opts[optNeedArg] instanceof Array) {
-            opts[optNeedArg].push('-')
-          } else {
-            opts[optNeedArg] = '-'
-          }
-          optNeedArg = undefined
-        } else {
-          throw new Error(`missing option argument -- ${nameNeedArg}`)
-        }
-      }
       if (cur.startsWith('-', 1)) {
         if (cur.length === 2) {
-          ++i
-          break
+          if (optNeedArg) {
+            if (opts[optNeedArg] instanceof Array) {
+              opts[optNeedArg].push('--')
+            } else {
+              opts[optNeedArg] = '--'
+            }
+            optNeedArg = undefined
+          } else {
+            ++i
+            break
+          }
         } else {
           const eq = cur.indexOf('=', 2)
           if (eq === -1) {
@@ -60,50 +57,65 @@ module.exports = function parseArgv (argv, options) {
           }
         }
       } else {
-        let last = cur.length - 1
-        for (let j = 1; j < last; ++j) {
-          const name = cur[j]
-          const opt = names[name]
-          if (opt) {
-            if (typeof opts[opt] === 'boolean') {
-              opts[opt] = !options[opt].def
+        if (optNeedArg) {
+          if (cur.length === 1) {
+            if (opts[optNeedArg] instanceof Array) {
+              opts[optNeedArg].push('-')
             } else {
-              if (opts[opt] instanceof Array) {
-                opts[opt].push(cur.slice(j + 1))
+              opts[optNeedArg] = '-'
+            }
+            optNeedArg = undefined
+          } else {
+            throw new Error(`missing option argument -- ${nameNeedArg}`)
+          }
+        } else {
+          let last = cur.length - 1
+          for (let j = 1; j < last; ++j) {
+            const name = cur[j]
+            const opt = names[name]
+            if (opt) {
+              if (typeof opts[opt] === 'boolean') {
+                opts[opt] = !options[opt].def
               } else {
-                opts[opt] = cur.slice(j + 1)
+                if (opts[opt] instanceof Array) {
+                  opts[opt].push(cur.slice(j + 1))
+                } else {
+                  opts[opt] = cur.slice(j + 1)
+                }
+                last = undefined
+                break
               }
-              last = undefined
-              break
-            }
-          } else {
-            throw new Error(`invalid option -- ${name}`)
-          }
-        }
-        if (last) {
-          const name = cur[last]
-          const opt = names[name]
-          if (opt) {
-            if (typeof opts[opt] === 'boolean') {
-              opts[opt] = !options[opt].def
             } else {
-              optNeedArg = opt
-              nameNeedArg = name
+              throw new Error(`invalid option -- ${name}`)
             }
-          } else {
-            throw new Error(`invalid option -- ${name}`)
+          }
+          if (last) {
+            const name = cur[last]
+            const opt = names[name]
+            if (opt) {
+              if (typeof opts[opt] === 'boolean') {
+                opts[opt] = !options[opt].def
+              } else {
+                optNeedArg = opt
+                nameNeedArg = name
+              }
+            } else {
+              throw new Error(`invalid option -- ${name}`)
+            }
           }
         }
       }
-    } else if (optNeedArg) {
-      if (opts[optNeedArg] instanceof Array) {
-        opts[optNeedArg].push(cur)
-      } else {
-        opts[optNeedArg] = cur
-      }
-      optNeedArg = undefined
     } else {
-      opts._.push(cur)
+      if (optNeedArg) {
+        if (opts[optNeedArg] instanceof Array) {
+          opts[optNeedArg].push(cur)
+        } else {
+          opts[optNeedArg] = cur
+        }
+        optNeedArg = undefined
+      } else {
+        opts._.push(cur)
+      }
     }
   }
   if (optNeedArg) {
