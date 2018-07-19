@@ -16,9 +16,9 @@ module.exports = function parseArgv (argv, options) {
         if (cur.length === 2) {
           if (optNeedArg) {
             if (opts[optNeedArg] instanceof Array) {
-              opts[optNeedArg].push('--')
+              opts[optNeedArg].push(cur)
             } else {
-              opts[optNeedArg] = '--'
+              opts[optNeedArg] = cur
             }
             optNeedArg = undefined
           } else {
@@ -57,18 +57,21 @@ module.exports = function parseArgv (argv, options) {
           }
         }
       } else {
-        if (optNeedArg) {
-          if (cur.length === 1) {
+        if (cur.length === 1) {
+          if (optNeedArg) {
             if (opts[optNeedArg] instanceof Array) {
-              opts[optNeedArg].push('-')
+              opts[optNeedArg].push(cur)
             } else {
-              opts[optNeedArg] = '-'
+              opts[optNeedArg] = cur
             }
             optNeedArg = undefined
           } else {
-            throw new Error(`missing option argument -- ${nameNeedArg}`)
+            opts._.push(cur)
           }
         } else {
+          if (optNeedArg) {
+            throw new Error(`missing option argument -- ${nameNeedArg}`)
+          }
           let last = cur.length - 1
           for (let j = 1; j < last; ++j) {
             const name = cur[j]
