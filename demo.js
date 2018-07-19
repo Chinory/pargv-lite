@@ -5,28 +5,28 @@ const BASENAME = require('path').basename(process.argv[1])
 const opts = (() => {
   const parseArgv = require('.')
   const options = {
-    action: { use: ['n', 'dry-run'], def: true },
-    verbose: { use: ['v', 'verbose'], def: false },
-    mode: { use: ['m', 'mode'], def: 'default' },
-    includes: { use: ['i', 'include'], def: [] },
-    unopened_option: { use: [], def: false },
-    help: { use: ['h', 'help'], def: false },
-    version: { use: ['version'], def: false },
-    rm: { use: ['r', 'rm'], def: {
-      force: { use: ['f', 'force'], def: false },
-      prompt: { use: ['i'], def: false },
-      prompt_once: { use: ['I'], def: false },
-      interactive: { use: ['interactive'], def: 'always' },
-      one_file_system: { use: ['one-file-system'], def: false },
-      preserve_root: { use: ['no-preserve-root'], def: true },
-      recursive: { use: ['r', 'R', 'recursive'], def: false },
-      remove_empty_dir: { use: ['d', 'dir'], def: false },
-      verbose: { use: ['v', 'verbose'], def: false },
-      help: { use: ['h', 'help'], def: false },
-      dev: { use: ['dev'], def: {
-        action: { use: ['n', 'dry-run'], def: true },
-        verbose: { use: ['v', 'verbose'], def: false },
-        help: { use: ['h', 'help'], def: false },
+    action: { set: ['n', 'dry-run'], def: true },
+    verbose: { set: ['v', 'verbose'], def: false },
+    mode: { set: ['m', 'mode'], def: 'default' },
+    includes: { set: ['i', 'include'], def: [] },
+    unopened_option: { set: [], def: false },
+    help: { set: ['h', 'help'], def: false },
+    version: { set: ['version'], def: false },
+    rm: { set: ['r', 'rm'], def: {
+      force: { set: ['f', 'force'], def: false },
+      prompt: { set: ['i'], def: false },
+      prompt_once: { set: ['I'], def: false },
+      interactive: { set: ['interactive'], def: 'always' },
+      one_file_system: { set: ['one-file-system'], def: false },
+      preserve_root: { set: ['no-preserve-root'], def: true },
+      recursive: { set: ['r', 'R', 'recursive'], def: false },
+      remove_empty_dir: { set: ['d', 'dir'], def: false },
+      verbose: { set: ['v', 'verbose'], def: false },
+      help: { set: ['h', 'help'], def: false },
+      dev: { set: ['dev'], def: {
+        action: { set: ['n', 'dry-run'], def: true },
+        verbose: { set: ['v', 'verbose'], def: false },
+        help: { set: ['h', 'help'], def: false },
       }}
     }}
   }

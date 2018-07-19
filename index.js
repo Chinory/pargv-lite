@@ -10,7 +10,7 @@ module.exports = function parseArgv (argv, options, modePath = '') {
     } else {
       opts[opt] = options[opt].def
     }
-    for (const name of options[opt].use) {
+    for (const name of options[opt].set) {
       names[name] = opt
     }
   }

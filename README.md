@@ -19,13 +19,13 @@ const BASENAME = require('path').basename(process.argv[1])
 const opts = (() => {
   const parseArgv = require('argv-lite')
   const options = {
-    action: { def: true, use: ['n', 'dry-run'] },
-    verbose: { def: false, use: ['v', 'verbose'] },
-    mode: { def: 'default', use: ['m', 'mode'] },
-    includes: { def: [], use: ['i', 'include'] },
-    unopened_option: { def: false, use: [] },
-    help: { def: false, use: ['h', 'help'] },
-    version: { def: false, use: ['version'] }
+    action: { def: true, set: ['n', 'dry-run'] },
+    verbose: { def: false, set: ['v', 'verbose'] },
+    mode: { def: 'default', set: ['m', 'mode'] },
+    includes: { def: [], set: ['i', 'include'] },
+    unopened_option: { def: false, set: [] },
+    help: { def: false, set: ['h', 'help'] },
+    version: { def: false, set: ['version'] }
   }
   try {
     return parseArgv(process.argv.slice(2), options)
@@ -70,7 +70,7 @@ opts = require('argv-lite')(argv, options)
 2. **Array**: The new string value will be appended to that array.
 3. **other**: The old value will be overwritten by the new string value.
 
-`options.*.use` contains the external names of option, which doesn't need to be same as the internal name, or even not needed.
+`options.*.set` contains the external names of option, which doesn't need to be same as the internal name, or even not needed.
 
 ## License
 

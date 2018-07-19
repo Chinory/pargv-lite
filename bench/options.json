@@ -1,6 +1,6 @@
 {
-  "super": { "def": "", "use": ["super"] },
-  "a": { "def": false, "use": ["a"] },
-  "ultra": { "def": "", "use": ["u", "ultra"] },
-  "lock": { "def": true, "use": ["no-lock"] }
+  "super": { "def": "", "set": ["super"] },
+  "a": { "def": false, "set": ["a"] },
+  "ultra": { "def": "", "set": ["u", "ultra"] },
+  "lock": { "def": true, "set": ["no-lock"] }
 }
