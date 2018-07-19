@@ -13,7 +13,16 @@ module.exports = function parseArgv (argv, options) {
     const cur = argv[i]
     if (cur.startsWith('-')) {
       if (optNeedArg) {
-        throw new Error(`missing option argument -- ${nameNeedArg}`)
+        if (cur.length === 1) {
+          if (opts[optNeedArg] instanceof Array) {
+            opts[optNeedArg].push('-')
+          } else {
+            opts[optNeedArg] = '-'
+          }
+          optNeedArg = undefined
+        } else {
+          throw new Error(`missing option argument -- ${nameNeedArg}`)
+        }
       }
       if (cur.startsWith('-', 1)) {
         if (cur.length === 2) {
