@@ -11,8 +11,10 @@ module.exports = function parseArgv (argv, options, modePath = '') {
     } else {
       opts[opt] = options[opt].def
     }
-    for (const name of options[opt].set) {
-      names[name] = opt
+    if (options[opt].set) {
+      for (const name of options[opt].set) {
+        names[name] = opt
+      }
     }
     if (options[opt].unset) {
       for (const name of options[opt].unset) {
@@ -61,7 +63,11 @@ module.exports = function parseArgv (argv, options, modePath = '') {
             } else {
               const opt_unset = names_unset[name]
               if (opt_unset) {
-                opts[opt_unset] = options[opt_unset].def
+                if (options[opt_unset].def instanceof Array) {
+                  opts[opt_unset] = options[opt_unset].def.slice()
+                } else {
+                  opts[opt_unset] = options[opt_unset].def
+                }
               } else {
                 throw new Error(`${modePath}invalid option -- ${name}`)
               }
@@ -126,7 +132,11 @@ module.exports = function parseArgv (argv, options, modePath = '') {
             } else {
               const opt_unset = names_unset[name]
               if (opt_unset) {
-                opts[opt_unset] = options[opt_unset].def
+                if (options[opt_unset].def instanceof Array) {
+                  opts[opt_unset] = options[opt_unset].def.slice()
+                } else {
+                  opts[opt_unset] = options[opt_unset].def
+                }
               } else {
                 throw new Error(`${modePath}invalid option -- ${name}`)
               }
@@ -138,6 +148,9 @@ module.exports = function parseArgv (argv, options, modePath = '') {
             if (opt) {
               if (typeof options[opt].def === 'boolean') {
                 opts[opt] = !options[opt].def
+              } else if (options[opt].def instanceof Array) {
+                optNeedArg = opt
+                nameNeedArg = name
               } else if (options[opt].def instanceof Object) {
                 opts[opt] = parseArgv(argv.slice(i + 1), options[opt].def, modePath + `${name}: `)
                 return opts
@@ -148,7 +161,11 @@ module.exports = function parseArgv (argv, options, modePath = '') {
             } else {
               const opt_unset = names_unset[name]
               if (opt_unset) {
-                opts[opt_unset] = options[opt_unset].def
+                if (options[opt_unset].def instanceof Array) {
+                  opts[opt_unset] = options[opt_unset].def.slice()
+                } else {
+                  opts[opt_unset] = options[opt_unset].def
+                }
               } else {
                 throw new Error(`${modePath}invalid option -- ${name}`)
               }
