@@ -98,18 +98,18 @@ module.exports = function parseArgv (argv, options, modulePath=[], optionPath=[]
             const optSet = namesSet[name]
             if (optSet) {
               if (typeof options[optSet].def === 'boolean') {
-                throw new Error(`can't set value of boolean option -- ${name}`)
+                throw new Error(`can't set value of option -- ${name}`)
               } else if (options[optSet].def instanceof Array) {
                 opts[optSet].push(cur.slice(eq + 1))
               } else if (options[optSet].def instanceof Object) {
-                throw new Error(`can't set value of module option -- ${name}`)
+                throw new Error(`can't set value of option -- ${name}`)
               } else {
                 opts[optSet] = cur.slice(eq + 1)
               }
             } else {
               const optReset = namesReset[name]
               if (optReset) {
-                throw new Error(`can't set value of reset option -- ${name}`)
+                throw new Error(`can't set value of option -- ${name}`)
               } else {
                 throw new Error(`invalid option -- ${name}`)
               }
