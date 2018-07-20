@@ -2,7 +2,7 @@
 module.exports = function parseArgv (argv, options, modePath = '') {
   const opts = {_: []}
   const names = {}
-  const names_unset = {}
+  const names_reset = {}
   for (const opt in options) {
     if (options[opt].def instanceof Array) {
       opts[opt] = options[opt].def.slice()
@@ -16,9 +16,9 @@ module.exports = function parseArgv (argv, options, modePath = '') {
         names[name] = opt
       }
     }
-    if (options[opt].unset) {
-      for (const name of options[opt].unset) {
-        names_unset[name] = opt
+    if (options[opt].reset) {
+      for (const name of options[opt].reset) {
+        names_reset[name] = opt
       }
     }
   }
@@ -61,12 +61,12 @@ module.exports = function parseArgv (argv, options, modePath = '') {
                 nameNeedArg = name
               }
             } else {
-              const opt_unset = names_unset[name]
-              if (opt_unset) {
-                if (options[opt_unset].def instanceof Array) {
-                  opts[opt_unset] = options[opt_unset].def.slice()
+              const opt_reset = names_reset[name]
+              if (opt_reset) {
+                if (options[opt_reset].def instanceof Array) {
+                  opts[opt_reset] = options[opt_reset].def.slice()
                 } else {
-                  opts[opt_unset] = options[opt_unset].def
+                  opts[opt_reset] = options[opt_reset].def
                 }
               } else {
                 throw new Error(`${modePath}invalid option -- ${name}`)
@@ -86,9 +86,9 @@ module.exports = function parseArgv (argv, options, modePath = '') {
                 opts[opt] = cur.slice(eq + 1)
               }
             } else {
-              const opt_unset = names_unset[name]
-              if (opt_unset) {
-                throw new Error(`${modePath}can not set value of unset option -- ${name}`)
+              const opt_reset = names_reset[name]
+              if (opt_reset) {
+                throw new Error(`${modePath}can not set value of reset option -- ${name}`)
               } else {
                 throw new Error(`${modePath}invalid option -- ${name}`)
               }
@@ -122,7 +122,10 @@ module.exports = function parseArgv (argv, options, modePath = '') {
                 if (options[opt].def instanceof Array) {
                   opts[opt].push(cur.slice(j + 1))
                 } else if (options[opt].def instanceof Object) {
-                  throw new Error(`${modePath}mode option syntax error -- ${name}`)
+                  const argv_sub = argv.slice(i)
+                  argv_sub[0] = '-' + argv_sub[0].slice(j + 1)
+                  opts[opt] = parseArgv(argv_sub, options[opt].def, modePath + `${name}: `)
+                  return opts
                 } else {
                   opts[opt] = cur.slice(j + 1)
                 }
@@ -130,12 +133,12 @@ module.exports = function parseArgv (argv, options, modePath = '') {
                 break
               }
             } else {
-              const opt_unset = names_unset[name]
-              if (opt_unset) {
-                if (options[opt_unset].def instanceof Array) {
-                  opts[opt_unset] = options[opt_unset].def.slice()
+              const opt_reset = names_reset[name]
+              if (opt_reset) {
+                if (options[opt_reset].def instanceof Array) {
+                  opts[opt_reset] = options[opt_reset].def.slice()
                 } else {
-                  opts[opt_unset] = options[opt_unset].def
+                  opts[opt_reset] = options[opt_reset].def
                 }
               } else {
                 throw new Error(`${modePath}invalid option -- ${name}`)
@@ -159,12 +162,12 @@ module.exports = function parseArgv (argv, options, modePath = '') {
                 nameNeedArg = name
               }
             } else {
-              const opt_unset = names_unset[name]
-              if (opt_unset) {
-                if (options[opt_unset].def instanceof Array) {
-                  opts[opt_unset] = options[opt_unset].def.slice()
+              const opt_reset = names_reset[name]
+              if (opt_reset) {
+                if (options[opt_reset].def instanceof Array) {
+                  opts[opt_reset] = options[opt_reset].def.slice()
                 } else {
-                  opts[opt_unset] = options[opt_unset].def
+                  opts[opt_reset] = options[opt_reset].def
                 }
               } else {
                 throw new Error(`${modePath}invalid option -- ${name}`)

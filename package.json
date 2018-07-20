@@ -1,6 +1,6 @@
 {
   "name": "pargv-lite",
-  "version": "1.0.0",
+  "version": "1.2.0",
   "description": "A simple & fast argv parser with option checking.",
   "main": "index.js",
   "repository": {

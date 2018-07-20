@@ -1,8 +1,8 @@
 # pargv-lite
 
-A simple & fast argv parser with option checking.
+A pure, fast and powerful argv parser with force strict option checking.
 
-Provides an easy way to launch program with right options.
+Focus on providing relaxed and elegant way to get right options to launch your program.
 
 ## Installation
 
@@ -12,18 +12,18 @@ $ npm i pargv-lite
 
 ## Usage
 
-### Example
+### Quick start
 
 ```javascript
 const BASENAME = require('path').basename(process.argv[1])
 const opts = (() => {
   const parseArgv = require('pargv-lite')
   const options = {
-    action: { def: true, set: ['n', 'dry-run'] },
+    action: { def: true, set: ['n', 'dry-run'], reset: ['a'] },
     verbose: { def: false, set: ['v', 'verbose'] },
     mode: { def: 'default', set: ['m', 'mode'] },
     includes: { def: [], set: ['i', 'include'] },
-    unopened_option: { def: false, set: [] },
+    unopened_option: { def: false },
     help: { def: false, set: ['h', 'help'] },
     version: { def: false, set: ['version'] }
   }
@@ -37,15 +37,13 @@ const opts = (() => {
 })()
 console.log(opts)
 ```
-### Have a try
-
-Change directory to the repository's root then:
+**Have a try**: Change directory to the repository's root then:
 
 
 ```shell
-$ node demo -nnn file1 --verbose --mode=old -mnew -i- --include -- -- --help
+$ node demo -na file1 --verbose --mode=old -mnew -i- --include -- -- --help
 { _: [ 'file1', '--help' ],
-  action: false,
+  action: true,
   verbose: true,
   mode: 'new',
   includes: [ '-', '--' ],
@@ -62,15 +60,61 @@ opts = require('pargv-lite')(argv, options)
 
 **argv**: Argument vector, usually set to `process.argv.slice(2)`
 
-**options**: Declare options before use. The key of the Object is the internal name of option while the value describes how to get this option from argv.
+**options**: Declare options before use. The key of `options` is the internal name of option while the value describes how to get this option from `argv`.
 
 `options.*.def` is the default value and its type determines how we handle this option:
 
 1. **boolean**: The value will be set to the negative of the default value. 
 2. **Array**: The new string value will be appended to that array.
-3. **other**: The old value will be overwritten by the new string value.
+3. **Object**: see Advanced / module option 
+3. **any**: The old value will be overwritten by the new string value.
 
-`options.*.set` contains the external names of option, which doesn't need to be same as the internal name, or even not needed.
+`options.*.set = []`  the external names to set option.
+
+`options.*.reset = []`  the external names to reset option. This can be used to implement `--no-*`, `--default-*` options.
+
+### Advanced
+
+#### module option
+
+Use `def` as new `options` to enter a sub module, pass all subsequent `argv` to it, then take returned `opts` as the value of this module option. If not used, the value will be `null`. Modules have their own option namespace. In fact, the first `options` is the `def` of the root module.
+
+Once set, module option can not be reset. This guarantees a single module path.
+
+**For Example**: Suppose your program has two sub module: `add` & `remove` , and `add` also owns two sub module, then you can configure like this:
+
+```javascript
+const options = {
+  add: { set: ['a'], def: {
+    quick: { set: ['q'], def: false },
+    link: { set: ['l'], def: {} }, 
+    file: { set: ['f'], def: {
+      copy: { set: ['c'], def: false }
+    }}
+  }},
+  remove: { set: ['r'], def: {
+    force: { set: ['f'], def: false },
+    recursive: { set: ['r'], def: false },
+  }},
+}
+```
+
+**Have a try**:
+
+```shell
+$ app table1 -aqfc file1
+{ _: [ 'table1' ],
+  add:
+   { _: [],
+     quick: true,
+     link: null,
+     file: { _: [ 'file1' ], copy: true } },
+  remove: null }
+$ app table1 -rr file1
+{ _: [ 'table1' ],
+  add: null,
+  remove: { _: [ 'file1' ], force: false, recursive: true } }
+```
 
 ## License
 
