@@ -5,7 +5,7 @@
   "main": "index.js",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/chinory/node-pargv-lite.git"
+    "url": "git+https://github.com/chinory/pargv-lite.git"
   },
   "keywords": [
     "parse",
@@ -15,9 +15,9 @@
   "author": "Chinory",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/chinory/node-pargv-lite/issues"
+    "url": "https://github.com/chinory/pargv-lite/issues"
   },
-  "homepage": "https://github.com/chinory/node-pargv-lite#readme",
+  "homepage": "https://github.com/chinory/pargv-lite#readme",
   "engines": {
     "node": ">=4.0.0"
   }

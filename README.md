@@ -143,7 +143,7 @@ const options = {
 $ node demo exam3 clone https://github.com/chinory/node-pargv-lite.git --bare
 { _: [],
   clone:
-   { _: [ 'https://github.com/chinory/node-pargv-lite.git' ],
+   { _: [ 'https://github.com/chinory/pargv-lite.git' ],
      checkout: true,
      bare: true },
   init: null }
