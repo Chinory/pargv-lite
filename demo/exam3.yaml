@@ -1,0 +1,18 @@
+clone:
+  set: [-clone]
+  def:
+    checkout:
+      set: [n, no-checkout]
+      def: true
+    bare:
+      set: [bare]
+      def: false
+init:
+  set: [-init]
+  def:
+    template:
+      set: [template]
+      def: ''
+    shared:
+      set: [shared]
+      def: false

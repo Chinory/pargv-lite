@@ -2,7 +2,7 @@
 
 A pure, fast and powerful argv parser with force strict option checking.
 
-Focus on providing relaxed and elegant way to get right options to launch your program.
+Provides an easy way to get correct options to launch your program.
 
 ## Installation
 
@@ -41,7 +41,7 @@ console.log(opts)
 
 
 ```shell
-$ node demo -na file1 --verbose --mode=old -mnew -i- --include -- -- --help
+$ node demo exam1 -na file1 --verbose --mode=old -mnew -i- --include -- -- --help
 { _: [ 'file1', '--help' ],
   action: true,
   verbose: true,
@@ -60,30 +60,30 @@ opts = require('pargv-lite')(argv, options)
 
 **argv**: Argument vector, usually set to `process.argv.slice(2)`
 
-**options**: Declare options before use. The key of `options` is the internal name of option while the value describes how to get this option from `argv`.
+**options**: Declare options before use. The key of `options` is the internal name of option which will use by the return value `opts `, while the value of `options` describes how to get this option from `argv`.
 
-`options.*.def` is the default value and its type determines how we handle this option:
+`options.*.def` is the default value and its type determines how we handle this option when set:
 
 1. **boolean**: The value will be set to the negative of the default value. 
 2. **Array**: The new string value will be appended to that array.
 3. **Object**: see Advanced / module option 
 3. **any**: The old value will be overwritten by the new string value.
 
-`options.*.set = []`  the external names to set option.
+`options.*.set = []`  The external names of the option to set the option.
 
-`options.*.reset = []`  the external names to reset option. This can be used to implement `--no-*`, `--default-*` options.
+`options.*.reset = []`  The external names to reset the option. This can be used to implement options like `--no-*`, `--default-*`.
 
-`options._` the setting of additional argument. If it's **undefined**, we create a **Array** for `opts._`. If it's **null**, we will reject any additional argument. Else, use `.slice()` to make a copy of it.
+`options._` The setting of additional argument. If it's **undefined**, we create a **Array** for the return value `opts._`. If it's **null**, we will reject any additional argument. Else, use `.slice()` to make a copy of it.
 
 ## Advanced
 
 ### module option
 
-Use `def` as new `options` to enter a sub module, pass all subsequent `argv` to it, then take returned `opts` as the value of this module option. If not used, the value will be `null`. Modules have their own option namespace. In fact, the first `options` is the `def` of the root module.
+Use `def` as new `options` to enter a sub module, pass all subsequent `argv` to it, then take returned `opts` as the value of this module option. If not used, the value of this option will be `null`. Modules have their own option namespace. In fact, the first `options` is the `def` of the root module.
 
 Once set, module option can not be reset. This guarantees a single module path.
 
-**For Example**: Suppose your program has two sub module: `add` & `remove` , and `add` also owns two sub module, then you can configure like this:
+**For Example**: Suppose your program has two sub module: `add` & `remove` , and `add` module also owns its two sub module `link` & `file`, then you can configure like this:
 
 ```javascript
 const options = {
@@ -104,7 +104,7 @@ const options = {
 **Have a try**:
 
 ```shell
-$ app table1 -aqfc file1
+$ node demo exam2 table1 -aqfc file1
 { _: [ 'table1' ],
   add:
    { _: [],
@@ -112,13 +112,13 @@ $ app table1 -aqfc file1
      link: null,
      file: { _: [ 'file1' ], copy: true } },
   remove: null }
-$ app table1 -rr file1
+$ node demo exam2 table1 -rr file1
 { _: [ 'table1' ],
   add: null,
   remove: { _: [ 'file1' ], force: false, recursive: true } }
 ```
 
-### keyword option
+## keyword option
 
 Keyword option is option that doesn't need to prefix with `-` or `--` . Just prefix the external name with `-`.
 
@@ -140,13 +140,21 @@ const options = {
 **Have a try**:
 
 ```shell
-$ git clone https://github.com/chinory/node-pargv-lite.git --bare
+$ node demo exam3 clone https://github.com/chinory/node-pargv-lite.git --bare
 { _: [],
   clone:
    { _: [ 'https://github.com/chinory/node-pargv-lite.git' ],
      checkout: true,
      bare: true },
   init: null }
+```
+
+## More Examples
+
+`options` can be written in JSON, also yaml. There are more `.yaml` options config in `demo/` to simulated other program. Try:
+
+```shell
+$ node demo git
 ```
 
 ## Benchmarks
@@ -161,5 +169,4 @@ pargv-lite × 986,109 ops/sec
 
 ## License
 
-- MIT
-
+MIT 

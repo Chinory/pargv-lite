@@ -25,13 +25,12 @@ module.exports = function parseArgv (argv, options, modulePath=[], optionPath=[]
       }
       if (options[opt].reset) {
         for (const name of options[opt].reset) {
-          // if (!(options[opt].def instanceof Array) && options[opt].def instanceof Object) {
-          //   throw new Error(`can't reset module option -- ${name}`)
-          // }
-          if (name[0] === '-') {
-            keywordsReset[name.slice(1)] = opt
-          } else {
-            namesReset[name] = opt
+          if (options[opt].def instanceof Array || !(options[opt].def instanceof Object)) {
+            if (name[0] === '-') {
+              keywordsReset[name.slice(1)] = opt
+            } else {
+              namesReset[name] = opt
+            }
           }
         }
       }
@@ -52,7 +51,7 @@ module.exports = function parseArgv (argv, options, modulePath=[], optionPath=[]
             optNeedArg = undefined
           } else {
             if (opts._ === null) {
-              throw new Error(`doesn't accept more arguments -- ${opts._[i]}`)
+              throw new Error(`doesn't accept extra arguments -- ${opts._[i]}`)
             }
             for (++i; i < argv.length; ++i) {
               opts._.push(argv[i])
@@ -127,7 +126,7 @@ module.exports = function parseArgv (argv, options, modulePath=[], optionPath=[]
             optNeedArg = undefined
           } else {
             if (opts._ === null) {
-              throw new Error(`doesn't accept more arguments -- ${cur}`)
+              throw new Error(`doesn't accept extra arguments -- ${cur}`)
             }
             opts._.push(cur)
           }
@@ -239,7 +238,7 @@ module.exports = function parseArgv (argv, options, modulePath=[], optionPath=[]
             }
           } else {
             if (opts._ === null) {
-              throw new Error(`doesn't accept more arguments -- ${cur}`)
+              throw new Error(`doesn't accept extra arguments -- ${cur}`)
             }
             opts._.push(cur)
           }

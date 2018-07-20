@@ -1,0 +1,21 @@
+action:
+  set: [n, dry-run]
+  reset: [a]
+  def: true
+verbose:
+  set: [v, verbose]
+  def: false
+mode:
+  set: [m, mode]
+  def: default
+includes:
+  set: [i, include]
+  reset: [clear-include]
+unopened_option:
+  def: false
+help:
+  set: [h, help]
+  def: false
+version:
+  set: [version]
+  def: false
