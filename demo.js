@@ -30,7 +30,7 @@ const opts = (() => {
   //     }}
   //   }}
   // }
-const options = {
+const options = { _: null,
   clone: { set: ['^clone$'], def: {
     bare: { set: ['bare$'], def: false },
     depth: { set: ['depth$'], def: Infinity },

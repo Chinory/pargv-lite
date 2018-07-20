@@ -73,6 +73,8 @@ opts = require('pargv-lite')(argv, options)
 
 `options.*.reset = []`  the external names to reset option. This can be used to implement `--no-*`, `--default-*` options.
 
+`options._` the setting of additional argument. If it's **undefined**, we create a **Array** for `opts._`. If it's **null**, we will reject any additional argument. Else, use `.slice()` to make a copy of it.
+
 ## Advanced
 
 ### module option

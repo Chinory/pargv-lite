@@ -1,7 +1,7 @@
 'use strict'
 const reKwHd = /^(\^?)(.+?)(\$?)$/
 module.exports = function parseArgv (argv, options, modePath = '') {
-  const opts = {_: []}
+  const opts = {_: options._ === null ? null : (options._.slice() || [])}
   const namesSet = {}
   const namesReset = {}
   const keywordsSet = {}
@@ -11,44 +11,46 @@ module.exports = function parseArgv (argv, options, modePath = '') {
   const headerKeywordsSet = {}
   const headerKeywordsReset = {}
   for (const opt in options) {
-    if (options[opt].def instanceof Array) {
-      opts[opt] = options[opt].def.slice()
-    } else if (options[opt].def instanceof Object) {
-      opts[opt] = null
-    } else {
-      opts[opt] = options[opt].def
-    }
-    if (options[opt].set) {
-      for (const name of options[opt].set) {
-        const ma = reKwHd.exec(name)
-        if (ma[2]) {
-          if (ma[1] && ma[3]) {
-            headerKeywordsSet[ma[2]] = opt
-          } else if (ma[3]) {
-            headerNamesSet[ma[2]] = opt
-          } else if (ma[1]) {
-            keywordsSet[ma[2]] = opt
-          } else {
-            namesSet[ma[2]] = opt
+    if (opt !== '_') {
+      if (options[opt].def instanceof Array) {
+        opts[opt] = options[opt].def.slice()
+      } else if (options[opt].def instanceof Object) {
+        opts[opt] = null
+      } else {
+        opts[opt] = options[opt].def
+      }
+      if (options[opt].set) {
+        for (const name of options[opt].set) {
+          const ma = reKwHd.exec(name)
+          if (ma[2]) {
+            if (ma[1] && ma[3]) {
+              headerKeywordsSet[ma[2]] = opt
+            } else if (ma[3]) {
+              headerNamesSet[ma[2]] = opt
+            } else if (ma[1]) {
+              keywordsSet[ma[2]] = opt
+            } else {
+              namesSet[ma[2]] = opt
+            }
           }
         }
       }
-    }
-    if (options[opt].reset) {
-      for (const name of options[opt].reset) {
-        // if (!options[opt].def instanceof Array && options[opt].def instanceof Object) {
-        //   throw new Error(`${modePath}can not reset module option -- ${name}`)
-        // }
-        const ma = reKwHd.exec(name)
-        if (ma[2]) {
-          if (ma[1] && ma[3]) {
-            headerKeywordsReset[ma[2]] = opt
-          } else if (ma[3]) {
-            headerNamesReset[ma[2]] = opt
-          } else if (ma[1]) {
-            keywordsReset[ma[2]] = opt
-          } else {
-            namesReset[ma[2]] = opt
+      if (options[opt].reset) {
+        for (const name of options[opt].reset) {
+          // if (!options[opt].def instanceof Array && options[opt].def instanceof Object) {
+          //   throw new Error(`${modePath}can not reset module option -- ${name}`)
+          // }
+          const ma = reKwHd.exec(name)
+          if (ma[2]) {
+            if (ma[1] && ma[3]) {
+              headerKeywordsReset[ma[2]] = opt
+            } else if (ma[3]) {
+              headerNamesReset[ma[2]] = opt
+            } else if (ma[1]) {
+              keywordsReset[ma[2]] = opt
+            } else {
+              namesReset[ma[2]] = opt
+            }
           }
         }
       }
@@ -152,6 +154,9 @@ module.exports = function parseArgv (argv, options, modePath = '') {
             }
             optNeedArg = undefined
           } else {
+            if (opts._ === null) {
+              throw new Error(`${modePath}don't accept additional arguments -- ${cur}`)
+            }
             opts._.push(cur)
           }
         } else {
@@ -276,6 +281,9 @@ module.exports = function parseArgv (argv, options, modePath = '') {
               opts[optReset] = options[optReset].def
             }
           } else {
+            if (opts._ === null) {
+              throw new Error(`${modePath}don't accept additional arguments -- ${cur}`)
+            }
             opts._.push(cur)
           }
         }
@@ -285,8 +293,13 @@ module.exports = function parseArgv (argv, options, modePath = '') {
   if (optNeedArg) {
     throw new Error(`${modePath}missing option argument -- ${nameNeedArg}`)
   }
-  for (const _ = opts._; i < argv.length; ++i) {
-    _.push(argv[i])
-  }
+  if (i < argv.length) {
+      if (opts._ === null) {
+        throw new Error(`${modePath}don't accept additional arguments -- ${opts._[i]}`)
+      }
+      for (const _ = opts._; i < argv.length; ++i) {
+        _.push(argv[i])
+      }
+    }
   return opts
 }
