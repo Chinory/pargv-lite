@@ -151,6 +151,8 @@ $ git clone https://github.com/chinory/node-pargv-lite.git --bare
 
 ### header option
 
+*This feature will be removed in the next release due to performance issues.*
+
 Header option is option that should only appear in the front of a module. Just suffix the external name with `$`.
 
 **For Example**:
@@ -172,6 +174,16 @@ $ git clone --depth 2 --bare repo
 $ git clone --bare repo --depth=3
 git: clone: option should be in front -- depth
 Try 'git --help' for more information.
+```
+
+## Benchmarks
+
+```
+mri × 357,540 ops/sec
+yargs × 35,300 ops/sec
+getopts × 1,589,662 ops/sec
+minimist × 315,455 ops/sec
+pargv-lite × 667,854 ops/sec
 ```
 
 ## License
