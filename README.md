@@ -73,9 +73,9 @@ opts = require('pargv-lite')(argv, options)
 
 `options.*.reset = []`  the external names to reset option. This can be used to implement `--no-*`, `--default-*` options.
 
-### Advanced
+## Advanced
 
-#### module option
+### module option
 
 Use `def` as new `options` to enter a sub module, pass all subsequent `argv` to it, then take returned `opts` as the value of this module option. If not used, the value will be `null`. Modules have their own option namespace. In fact, the first `options` is the `def` of the root module.
 
@@ -114,6 +114,37 @@ $ app table1 -rr file1
 { _: [ 'table1' ],
   add: null,
   remove: { _: [ 'file1' ], force: false, recursive: true } }
+```
+
+### keyword option
+
+Keyword option is option that doesn't need to prefix with `-` or `--` . Just prefix the external name with `^`.
+
+**For Example**:
+
+```javascript
+const options = {
+  clone: { set: '^clone', def: {
+    checkout: { set: ['n', 'no-checkout'], def: true },
+    bare: { set: ['bare'], def: false },
+  }},
+  init: { set: '^init', def: {
+    template: { set: ['template'], def: '' },
+    shared: { set: ['shared'], def: false }
+  }}
+}
+```
+
+**Have a try**:
+
+```shell
+$ git clone https://github.com/chinory/node-pargv-lite.git --bare
+{ _: [],
+  clone:
+   { _: [ 'https://github.com/chinory/node-pargv-lite.git' ],
+     checkout: true,
+     bare: true },
+  init: null }
 ```
 
 ## License
