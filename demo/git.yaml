@@ -53,21 +53,24 @@ add:
 reset:
   set: [-reset]
   def:
+    default:
+      set: [-]
+      def: {}
     mixed:
       set: [mixed]
-      def: false
+      def: {}
     soft:
       set: [soft]
-      def: false
+      def: {}
     hard:
       set: [hard]
-      def: false
+      def: {}
     merge:
       set: [merge]
-      def: false
+      def: {}
     keep:
       set: [keep]
-      def: false
+      def: {}
     recurse_submodules:
       set: [recurse-submodules]
       def: null

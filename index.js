@@ -25,7 +25,7 @@ module.exports = function parseArgv (argv, options, modulePath=[], optionPath=[]
       }
       if (options[opt].reset) {
         for (const name of options[opt].reset) {
-          // if (!options[opt].def instanceof Array && options[opt].def instanceof Object) {
+          // if (!(options[opt].def instanceof Array) && options[opt].def instanceof Object) {
           //   throw new Error(`can't reset module option -- ${name}`)
           // }
           if (name[0] === '-') {
