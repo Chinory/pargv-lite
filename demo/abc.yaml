@@ -1,0 +1,45 @@
+aa:
+  set: [a, -a]
+  def:
+    a:
+      set: [a]
+      reset: [A]
+      def: false
+    b:
+      set: [b]
+      reset: [B]
+      def: false
+    c:
+      set: [c]
+      reset: [B]
+      def: false
+bb:
+  set: [b]
+  def: 
+    a:
+      set: [a]
+      reset: [A]
+      def: false
+    b:
+      set: [b]
+      reset: [B]
+      def: false
+    c:
+      set: [c]
+      reset: [B]
+      def: false
+cc:
+  set: [c]
+  def:
+    a:
+      set: [a]
+      reset: [A]
+      def: false
+    b:
+      set: [b]
+      reset: [B]
+      def: false
+    c:
+      set: [c]
+      reset: [B]
+      def: false

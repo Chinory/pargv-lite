@@ -120,17 +120,17 @@ $ app table1 -rr file1
 
 ### keyword option
 
-Keyword option is option that doesn't need to prefix with `-` or `--` . Just prefix the external name with `^`.
+Keyword option is option that doesn't need to prefix with `-` or `--` . Just prefix the external name with `-`.
 
 **For Example**:
 
 ```javascript
 const options = {
-  clone: { set: '^clone', def: {
+  clone: { set: '-clone', def: {
     checkout: { set: ['n', 'no-checkout'], def: true },
     bare: { set: ['bare'], def: false },
   }},
-  init: { set: '^init', def: {
+  init: { set: '-init', def: {
     template: { set: ['template'], def: '' },
     shared: { set: ['shared'], def: false }
   }}

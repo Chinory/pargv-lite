@@ -1,5 +1,5 @@
 'use strict'
-module.exports = function parseArgv (argv, options, modePath = '') {
+module.exports = function parseArgv (argv, options, modulePath=[], optionPath=[]) {
   const opts = {_: options._ === null ? null : (options._ && options._.slice() || [])}
   const namesSet = {}
   const namesReset = {}
@@ -16,7 +16,7 @@ module.exports = function parseArgv (argv, options, modePath = '') {
       }
       if (options[opt].set) {
         for (const name of options[opt].set) {
-          if (name[0] === '^' && name.length > 1) {
+          if (name[0] === '-') {
             keywordsSet[name.slice(1)] = opt
           } else {
             namesSet[name] = opt
@@ -26,9 +26,9 @@ module.exports = function parseArgv (argv, options, modePath = '') {
       if (options[opt].reset) {
         for (const name of options[opt].reset) {
           // if (!options[opt].def instanceof Array && options[opt].def instanceof Object) {
-          //   throw new Error(`${modePath}can't reset module option -- ${name}`)
+          //   throw new Error(`can't reset module option -- ${name}`)
           // }
-          if (name[0] === '^' && name.length > 1) {
+          if (name[0] === '-') {
             keywordsReset[name.slice(1)] = opt
           } else {
             namesReset[name] = opt
@@ -52,7 +52,7 @@ module.exports = function parseArgv (argv, options, modePath = '') {
             optNeedArg = undefined
           } else {
             if (opts._ === null) {
-              throw new Error(`${modePath}don't accept additional arguments -- ${opts._[i]}`)
+              throw new Error(`doesn't accept more arguments -- ${opts._[i]}`)
             }
             for (++i; i < argv.length; ++i) {
               opts._.push(argv[i])
@@ -60,7 +60,7 @@ module.exports = function parseArgv (argv, options, modePath = '') {
           }
         } else {
           if (optNeedArg) {
-            throw new Error(`${modePath}missing option argument -- ${nameNeedArg}`)
+            throw new Error(`missing option argument -- ${nameNeedArg}`)
           }
           const eq = cur.indexOf('=', 2)
           if (eq === -1) {
@@ -73,7 +73,9 @@ module.exports = function parseArgv (argv, options, modePath = '') {
                 optNeedArg = optSet
                 nameNeedArg = name
               } else if (options[optSet].def instanceof Object) {
-                opts[optSet] = parseArgv(argv.slice(i + 1), options[optSet].def, modePath + `${name}: `)
+                modulePath.push(optSet)
+                optionPath.push(name)
+                opts[optSet] = parseArgv(argv.slice(i + 1), options[optSet].def, modulePath, optionPath)
                 return opts
               } else {
                 optNeedArg = optSet
@@ -88,7 +90,7 @@ module.exports = function parseArgv (argv, options, modePath = '') {
                   opts[optReset] = options[optReset].def
                 }
               } else {
-                throw new Error(`${modePath}invalid option -- ${name}`)
+                throw new Error(`invalid option -- ${name}`)
               }
             }
           } else {
@@ -96,20 +98,20 @@ module.exports = function parseArgv (argv, options, modePath = '') {
             const optSet = namesSet[name]
             if (optSet) {
               if (typeof options[optSet].def === 'boolean') {
-                throw new Error(`${modePath}can not set value of boolean option -- ${name}`)
+                throw new Error(`can't set value of boolean option -- ${name}`)
               } else if (options[optSet].def instanceof Array) {
                 opts[optSet].push(cur.slice(eq + 1))
               } else if (options[optSet].def instanceof Object) {
-                throw new Error(`${modePath}mode option syntax error -- ${name}`)
+                throw new Error(`can't set value of module option -- ${name}`)
               } else {
                 opts[optSet] = cur.slice(eq + 1)
               }
             } else {
               const optReset = namesReset[name]
               if (optReset) {
-                throw new Error(`${modePath}can not set value of reset option -- ${name}`)
+                throw new Error(`can't set value of reset option -- ${name}`)
               } else {
-                throw new Error(`${modePath}invalid option -- ${name}`)
+                throw new Error(`invalid option -- ${name}`)
               }
             }
           }
@@ -125,13 +127,13 @@ module.exports = function parseArgv (argv, options, modePath = '') {
             optNeedArg = undefined
           } else {
             if (opts._ === null) {
-              throw new Error(`${modePath}don't accept additional arguments -- ${cur}`)
+              throw new Error(`doesn't accept more arguments -- ${cur}`)
             }
             opts._.push(cur)
           }
         } else {
           if (optNeedArg) {
-            throw new Error(`${modePath}missing option argument -- ${nameNeedArg}`)
+            throw new Error(`missing option argument -- ${nameNeedArg}`)
           }
           let last = cur.length - 1
           for (let j = 1; j < last; ++j) {
@@ -146,7 +148,9 @@ module.exports = function parseArgv (argv, options, modePath = '') {
                 } else if (options[optSet].def instanceof Object) {
                   const argv_sub = argv.slice(i)
                   argv_sub[0] = '-' + argv_sub[0].slice(j + 1)
-                  opts[optSet] = parseArgv(argv_sub, options[optSet].def, modePath + `${name}: `)
+                  modulePath.push(optSet)
+                  optionPath.push(name)
+                  opts[optSet] = parseArgv(argv_sub, options[optSet].def, modulePath, optionPath)
                   return opts
                 } else {
                   opts[optSet] = cur.slice(j + 1)
@@ -163,7 +167,7 @@ module.exports = function parseArgv (argv, options, modePath = '') {
                   opts[optReset] = options[optReset].def
                 }
               } else {
-                throw new Error(`${modePath}invalid option -- ${name}`)
+                throw new Error(`invalid option -- ${name}`)
               }
             }
           }
@@ -177,7 +181,9 @@ module.exports = function parseArgv (argv, options, modePath = '') {
                 optNeedArg = optSet
                 nameNeedArg = name
               } else if (options[optSet].def instanceof Object) {
-                opts[optSet] = parseArgv(argv.slice(i + 1), options[optSet].def, modePath + `${name}: `)
+                modulePath.push(optSet)
+                optionPath.push(name)
+                opts[optSet] = parseArgv(argv.slice(i + 1), options[optSet].def, modulePath, optionPath)
                 return opts
               } else {
                 optNeedArg = optSet
@@ -192,7 +198,7 @@ module.exports = function parseArgv (argv, options, modePath = '') {
                   opts[optReset] = options[optReset].def
                 }
               } else {
-                throw new Error(`${modePath}invalid option -- ${name}`)
+                throw new Error(`invalid option -- ${name}`)
               }
             }
           }
@@ -215,7 +221,9 @@ module.exports = function parseArgv (argv, options, modePath = '') {
             optNeedArg = optSet
             nameNeedArg = cur
           } else if (options[optSet].def instanceof Object) {
-            opts[optSet] = parseArgv(argv.slice(i + 1), options[optSet].def, modePath + `${cur}: `)
+            modulePath.push(optSet)
+            optionPath.push(cur)
+            opts[optSet] = parseArgv(argv.slice(i + 1), options[optSet].def, modulePath, optionPath)
             return opts
           } else {
             optNeedArg = optSet
@@ -231,7 +239,7 @@ module.exports = function parseArgv (argv, options, modePath = '') {
             }
           } else {
             if (opts._ === null) {
-              throw new Error(`${modePath}don't accept additional arguments -- ${cur}`)
+              throw new Error(`doesn't accept more arguments -- ${cur}`)
             }
             opts._.push(cur)
           }
@@ -240,7 +248,7 @@ module.exports = function parseArgv (argv, options, modePath = '') {
     }
   }
   if (optNeedArg) {
-    throw new Error(`${modePath}missing option argument -- ${nameNeedArg}`)
+    throw new Error(`missing option argument -- ${nameNeedArg}`)
   }
   return opts
 }

@@ -1,6 +1,6 @@
 _: null
 clone:
-  set: [^clone]
+  set: [-clone]
   def: 
     verbose:
       set: [v, verbose]
@@ -29,38 +29,50 @@ clone:
     shared:
       set: [s, shared]
       def: false
-    recurse_submodules:
-      set: [recurse_submodules]
-      def: []
-    jobs:
-      set: [j, jobs]
-      def: null
-    template:
-      set: [template]
-      def: null
-    reference:
-      set: [reference]
-      def: null
-    reference_if_able:
-      set: [reference-if-able]
-      def: null
-    dissociate:
-      set: [dissociate]
-      def: null
     origin:
       set: [o, origin]
       def: null
     branch:
       set: [b, branch]
       def: null
-    upload_pack:
-      set: [u, upload-pack]
-      def: null
     depth:
       set: [depth]
       def: null
-
-    
 add:
-  set: [^add]
-  def: false
+  set: [-add]
+  def: 
+    dry_run:
+      set: [n, dry-run]
+      def: false
+    verbose:
+      set: [v, verbose]
+      def: false
+    interactive:
+      set: [i, interactive]
+      def: false
+reset:
+  set: [-reset]
+  def:
+    mixed:
+      set: [mixed]
+      def: false
+    soft:
+      set: [soft]
+      def: false
+    hard:
+      set: [hard]
+      def: false
+    merge:
+      set: [merge]
+      def: false
+    keep:
+      set: [keep]
+      def: false
+    recurse_submodules:
+      set: [recurse-submodules]
+      def: null
+    patch:
+      set: [p, patch]
+      def: false
+    intent_to_add:
+      set: [N, intent-to-add]
