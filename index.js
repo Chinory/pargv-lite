@@ -1,7 +1,7 @@
 'use strict'
 const reKwHd = /^(\^?)(.+?)(\$?)$/
 module.exports = function parseArgv (argv, options, modePath = '') {
-  const opts = {_: options._ === null ? null : (options._.slice() || [])}
+  const opts = {_: options._ === null ? null : (options._ && options._.slice() || [])}
   const namesSet = {}
   const namesReset = {}
   const keywordsSet = {}
