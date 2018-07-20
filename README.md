@@ -147,6 +147,31 @@ $ git clone https://github.com/chinory/node-pargv-lite.git --bare
   init: null }
 ```
 
+### header option
+
+Header option is option that should only appear in the front of a module. Just suffix the external name with `$`.
+
+**For Example**:
+
+```javascript
+const options = {
+  clone: { set: ['^clone$'], def: {
+    bare: { set: ['bare$'], def: false },
+    depth: { set: ['depth$'], def: Infinity },
+  }}
+}
+```
+
+**Have a try**:
+
+```shell
+$ git clone --depth 2 --bare repo
+{ _: [], clone: { _: [ 'repo' ], bare: true, depth: '2' } }
+$ git clone --bare repo --depth=3
+git: clone: option should be in front -- depth
+Try 'git --help' for more information.
+```
+
 ## License
 
 - MIT

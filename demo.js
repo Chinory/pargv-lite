@@ -30,16 +30,12 @@ const opts = (() => {
   //     }}
   //   }}
   // }
-  const options = {
-    clone: { set: ['^clone'], def: {
-      checkout: { set: ['n', 'no-checkout'], def: true },
-      bare: { set: ['bare'], def: false },
-    }},
-    init: { set: ['^init'], def: {
-      template: { set: ['template'], def: '' },
-      shared: { set: ['shared'], def: false }
-    }}
-  }
+const options = {
+  clone: { set: ['^clone$'], def: {
+    bare: { set: ['bare$'], def: false },
+    depth: { set: ['depth$'], def: Infinity },
+  }}
+}
   try {
     return parseArgv(process.argv.slice(2), options)
   } catch (err) {

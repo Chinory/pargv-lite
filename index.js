@@ -1,10 +1,15 @@
 'use strict'
+const reKwHd = /^(\^?)(.+?)(\$?)$/
 module.exports = function parseArgv (argv, options, modePath = '') {
   const opts = {_: []}
   const namesSet = {}
   const namesReset = {}
   const keywordsSet = {}
   const keywordsReset = {}
+  const headerNamesSet = {}
+  const headerNamesReset = {}
+  const headerKeywordsSet = {}
+  const headerKeywordsReset = {}
   for (const opt in options) {
     if (options[opt].def instanceof Array) {
       opts[opt] = options[opt].def.slice()
@@ -15,27 +20,42 @@ module.exports = function parseArgv (argv, options, modePath = '') {
     }
     if (options[opt].set) {
       for (const name of options[opt].set) {
-        if (name[0] === '^' && name.length > 1) {
-          keywordsSet[name.slice(1)] = opt
-        } else {
-          namesSet[name] = opt
+        const ma = reKwHd.exec(name)
+        if (ma[2]) {
+          if (ma[1] && ma[3]) {
+            headerKeywordsSet[ma[2]] = opt
+          } else if (ma[3]) {
+            headerNamesSet[ma[2]] = opt
+          } else if (ma[1]) {
+            keywordsSet[ma[2]] = opt
+          } else {
+            namesSet[ma[2]] = opt
+          }
         }
       }
     }
     if (options[opt].reset) {
       for (const name of options[opt].reset) {
-        if (!options[opt].def instanceof Array && options[opt].def instanceof Object) {
-          throw new Error(`${modePath}can not reset module option -- ${name}`)
-        }
-        if (name[0] === '^' && name.length > 1) {
-          keywordsReset[name.slice(1)] = opt
-        } else {
-          namesReset[name] = opt
+        // if (!options[opt].def instanceof Array && options[opt].def instanceof Object) {
+        //   throw new Error(`${modePath}can not reset module option -- ${name}`)
+        // }
+        const ma = reKwHd.exec(name)
+        if (ma[2]) {
+          if (ma[1] && ma[3]) {
+            headerKeywordsReset[ma[2]] = opt
+          } else if (ma[3]) {
+            headerNamesReset[ma[2]] = opt
+          } else if (ma[1]) {
+            keywordsReset[ma[2]] = opt
+          } else {
+            namesReset[ma[2]] = opt
+          }
         }
       }
     }
   }
   let i, optNeedArg, nameNeedArg
+  let iHeader = 0
   for (i = 0; i < argv.length; ++i) {
     const cur = argv[i]
     if (cur[0] === '-') {
@@ -59,7 +79,9 @@ module.exports = function parseArgv (argv, options, modePath = '') {
           const eq = cur.indexOf('=', 2)
           if (eq === -1) {
             const name = cur.slice(2)
-            const optSet = namesSet[name]
+            const optHeaderSet = i > iHeader ? undefined : headerNamesSet[name]
+            if (optHeaderSet) ++iHeader
+            const optSet = optHeaderSet || namesSet[name]
             if (optSet) {
               if (typeof options[optSet].def === 'boolean') {
                 opts[optSet] = !options[optSet].def
@@ -74,7 +96,9 @@ module.exports = function parseArgv (argv, options, modePath = '') {
                 nameNeedArg = name
               }
             } else {
-              const optReset = namesReset[name]
+              const optHeaderReset = i > iHeader ? undefined : headerNamesReset[name]
+              if (optHeaderReset) ++iHeader
+              const optReset = optHeaderReset || namesReset[name]
               if (optReset) {
                 if (options[optReset].def instanceof Array) {
                   opts[optReset] = options[optReset].def.slice()
@@ -82,26 +106,36 @@ module.exports = function parseArgv (argv, options, modePath = '') {
                   opts[optReset] = options[optReset].def
                 }
               } else {
-                throw new Error(`${modePath}invalid option -- ${name}`)
+                if (headerNamesSet[name] || headerNamesReset[name]) {
+                  throw new Error(`${modePath}option should be in front -- ${name}`)
+                } else {
+                  throw new Error(`${modePath}invalid option -- ${name}`)
+                }
               }
             }
           } else {
             const name = cur.slice(2, eq)
-            const optSet = namesSet[name]
+            const optHeaderSet = i > iHeader ? undefined : headerNamesSet[name]
+            if (optHeaderSet) ++iHeader
+            const optSet = optHeaderSet || namesSet[name]
             if (optSet) {
               if (typeof options[optSet].def === 'boolean') {
-                throw new Error(`${modePath}can not set value of boolean option -- ${name}`)
+                throw new Error(`${modePath}can't set value of boolean option -- ${name}`)
               } else if (options[optSet].def instanceof Array) {
                 opts[optSet].push(cur.slice(eq + 1))
               } else if (options[optSet].def instanceof Object) {
-                throw new Error(`${modePath}mode option syntax error -- ${name}`)
+                throw new Error(`${modePath}can't set value of module option -- ${name}`)
               } else {
                 opts[optSet] = cur.slice(eq + 1)
               }
             } else {
-              const optReset = namesReset[name]
+              const optHeaderReset = i > iHeader ? undefined : headerNamesReset[name]
+              if (optHeaderReset) ++iHeader
+              const optReset = optHeaderReset || namesReset[name]
               if (optReset) {
-                throw new Error(`${modePath}can not set value of reset option -- ${name}`)
+                throw new Error(`${modePath}can't set value of reset option -- ${name}`)
+              } else if (headerNamesSet[name] || headerNamesReset[name]) {
+                throw new Error(`${modePath}option should be in front -- ${name}`)
               } else {
                 throw new Error(`${modePath}invalid option -- ${name}`)
               }
@@ -127,7 +161,9 @@ module.exports = function parseArgv (argv, options, modePath = '') {
           let last = cur.length - 1
           for (let j = 1; j < last; ++j) {
             const name = cur[j]
-            const optSet = namesSet[name]
+            const optHeaderSet = i > iHeader ? undefined : headerNamesSet[name]
+            if (optHeaderSet) ++iHeader
+            const optSet = optHeaderSet || namesSet[name]
             if (optSet) {
               if (typeof options[optSet].def === 'boolean') {
                 opts[optSet] = !options[optSet].def
@@ -146,7 +182,9 @@ module.exports = function parseArgv (argv, options, modePath = '') {
                 break
               }
             } else {
-              const optReset = namesReset[name]
+              const optHeaderReset = i > iHeader ? undefined : headerNamesReset[name]
+              if (optHeaderReset) ++iHeader
+              const optReset = optHeaderReset || namesReset[name]
               if (optReset) {
                 if (options[optReset].def instanceof Array) {
                   opts[optReset] = options[optReset].def.slice()
@@ -154,13 +192,19 @@ module.exports = function parseArgv (argv, options, modePath = '') {
                   opts[optReset] = options[optReset].def
                 }
               } else {
-                throw new Error(`${modePath}invalid option -- ${name}`)
+                if (headerNamesSet[name] || headerNamesReset[name]) {
+                  throw new Error(`${modePath}option should be in front -- ${name}`)
+                } else {
+                  throw new Error(`${modePath}invalid option -- ${name}`)
+                }
               }
             }
           }
           if (last) {
             const name = cur[last]
-            const optSet = namesSet[name]
+            const optHeaderSet = i > iHeader ? undefined : headerNamesSet[name]
+            if (optHeaderSet) ++iHeader
+            const optSet = optHeaderSet || namesSet[name]
             if (optSet) {
               if (typeof options[optSet].def === 'boolean') {
                 opts[optSet] = !options[optSet].def
@@ -175,7 +219,9 @@ module.exports = function parseArgv (argv, options, modePath = '') {
                 nameNeedArg = name
               }
             } else {
-              const optReset = namesReset[name]
+              const optHeaderReset = i > iHeader ? undefined : headerNamesReset[name]
+              if (optHeaderReset) ++iHeader
+              const optReset = optHeaderReset || namesReset[name]
               if (optReset) {
                 if (options[optReset].def instanceof Array) {
                   opts[optReset] = options[optReset].def.slice()
@@ -183,7 +229,11 @@ module.exports = function parseArgv (argv, options, modePath = '') {
                   opts[optReset] = options[optReset].def
                 }
               } else {
-                throw new Error(`${modePath}invalid option -- ${name}`)
+                if (headerNamesSet[name] || headerNamesReset[name]) {
+                  throw new Error(`${modePath}option should be in front -- ${name}`)
+                } else {
+                  throw new Error(`${modePath}invalid option -- ${name}`)
+                }
               }
             }
           }
@@ -196,9 +246,12 @@ module.exports = function parseArgv (argv, options, modePath = '') {
         } else {
           opts[optNeedArg] = cur
         }
+        ++iHeader
         optNeedArg = undefined
       } else {
-        const optSet = keywordsSet[cur]
+        const optHeaderSet = i > iHeader ? undefined : headerKeywordsSet[cur]
+        if (optHeaderSet) ++iHeader
+        const optSet = optHeaderSet || keywordsSet[cur]
         if (optSet) {
           if (typeof options[optSet].def === 'boolean') {
             opts[optSet] = !options[optSet].def
@@ -213,7 +266,9 @@ module.exports = function parseArgv (argv, options, modePath = '') {
             nameNeedArg = cur
           }
         } else {
-          const optReset = keywordsReset[cur]
+          const optHeaderReset = i > iHeader ? undefined : headerKeywordsReset[cur]
+          if (optHeaderReset) ++iHeader
+          const optReset = optHeaderReset || keywordsReset[cur]
           if (optReset) {
             if (options[optReset].def instanceof Array) {
               opts[optReset] = options[optReset].def.slice()
