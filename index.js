@@ -56,6 +56,7 @@ module.exports = function parseArgv (argv, options, modulePath=[], optionPath=[]
             for (++i; i < argv.length; ++i) {
               opts._.push(argv[i])
             }
+            return opts
           }
         } else {
           if (optNeedArg) {

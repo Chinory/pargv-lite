@@ -47,7 +47,7 @@ $ node demo exam1 -na file1 --verbose --mode=old -mnew -i- --include -- -- --hel
   verbose: true,
   mode: 'new',
   includes: [ '-', '--' ],
-  unopened_opt: false,
+  unopened_option: false,
   help: false,
   version: false }
 ```
@@ -140,7 +140,7 @@ const options = {
 **Have a try**:
 
 ```shell
-$ node demo exam3 clone https://github.com/chinory/node-pargv-lite.git --bare
+$ node demo exam3 clone https://github.com/chinory/pargv-lite.git --bare
 { _: [],
   clone:
    { _: [ 'https://github.com/chinory/pargv-lite.git' ],
