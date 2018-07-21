@@ -2,7 +2,9 @@
 
 A pure, fast and powerful argv parser with force strict option checking.
 
-Provides an easy way to get correct options to launch your program.
+- **Pure**: Just one function `parseArgv()`
+- **Fast**: 2x to 20x faster than the alternatives. See [Benchmarks](#Benchmarks)
+- **Powerful**: Please read on!
 
 ## Installation
 
@@ -22,7 +24,7 @@ const opts = (() => {
     action: { def: true, set: ['n', 'dry-run'], reset: ['a'] },
     verbose: { def: false, set: ['v', 'verbose'] },
     mode: { def: 'default', set: ['m', 'mode'] },
-    includes: { def: [], set: ['i', 'include'] },
+    includes: { def: [], set: ['i', 'include'], reset: ['clear-includes'] },
     unopened_option: { def: false },
     help: { def: false, set: ['h', 'help'] },
     version: { def: false, set: ['version'] }
@@ -41,7 +43,7 @@ console.log(opts)
 
 
 ```shell
-$ node demo exam1 -na file1 --verbose --mode=old -mnew -i- --include -- -- --help
+$ node demo app1 -na file1 --verbose --mode=old -mnew -i- --include -- -- --help
 { _: [ 'file1', '--help' ],
   action: true,
   verbose: true,
@@ -58,44 +60,51 @@ $ node demo exam1 -na file1 --verbose --mode=old -mnew -i- --include -- -- --hel
 opts = require('pargv-lite')(argv, options)
 ```
 
-**argv**: Argument vector, usually set to `process.argv.slice(2)`
+**argv**: Arguments array, usually set to `process.argv.slice(2)`.
 
-**options**: Declare options before use. The key of `options` is the internal name of option which will use by the return value `opts `, while the value of `options` describes how to get this option from `argv`.
+**options**: An **Object** that declares options. The key of `options` is the internal name of an option while the value is its attribute.
 
-`options.*.def` is the default value and its type determines how we handle this option when set:
+`options.*.set = []`  The external names to set the option. Empty or **undefined** means users can't set it externally.
 
-1. **boolean**: The value will be set to the negative of the default value. 
-2. **Array**: The new string value will be appended to that array.
-3. **Object**: see Advanced / module option 
-3. **any**: The old value will be overwritten by the new string value.
+`options.*.def` is the default value. Its type determined the option's type and behavior:
 
-`options.*.set = []`  The external names of the option to set the option.
+1. **boolean**: When set, the value will be set to the negative of the default. 
+2. **Array**: When set, the new string value will be appended to the array.
+3. **Object**: When set, enter a submodule. See Advanced / Module Option.
+3. **any**: When set, the old value will be overwritten by the new string value.
 
-`options.*.reset = []`  The external names to reset the option. This can be used to implement options like `--no-*`, `--default-*`.
+`options.*.reset = []`  The external names to reset the option. When used, the value will be reset to the default. No arguments needed. This can be used to implement options such as `--no-*`, which has the advantage that you don't have to use a specific prefix.
 
-`options._` The setting of additional argument. If it's **undefined**, we create a **Array** for the return value `opts._`. If it's **null**, we will reject any additional argument. Else, use `.slice()` to make a copy of it.
+`options._` The setting of extra arguments which returned by `opts._`. Its type also determined the behavior:
+
+1. **null**: Reject any extra arguments. Settings will cause an error. `opts._` will always be **null**.
+2. **undefined**: Create an **Array** as `opts._`.
+3. **any**: Use `options._.slice()` to make a copy of it as `opts._`.
 
 ## Advanced
 
-### module option
+### Module Option
 
-Use `def` as new `options` to enter a sub module, pass all subsequent `argv` to it, then take returned `opts` as the value of this module option. If not used, the value of this option will be `null`. Modules have their own option namespace. In fact, the first `options` is the `def` of the root module.
+Setting a module option means to use its `def` as `options` to parse subsequent `argv` , and take the parsed `opts` as the value of this option. This provides a explicit way to access submodules with their own option namespace from anywhere. Module option can't be reset, that guarantees a single module path, which can be obtained this way:
 
-Once set, module option can not be reset. This guarantees a single module path.
+```javascript
+const modulePath = []
+opts = require('pargv-lite')(argv, options, modulePath)
+```
 
-**For Example**: Suppose your program has two sub module: `add` & `remove` , and `add` module also owns its two sub module `link` & `file`, then you can configure like this:
+If a module option isn't used, its value will be **null**.
+
+**For Example**: 
 
 ```javascript
 const options = {
   add: { set: ['a'], def: {
-    quick: { set: ['q'], def: false },
-    link: { set: ['l'], def: {} }, 
+    verbose: { set: ['v'], def: false },
     file: { set: ['f'], def: {
       copy: { set: ['c'], def: false }
     }}
   }},
   remove: { set: ['r'], def: {
-    force: { set: ['f'], def: false },
     recursive: { set: ['r'], def: false },
   }},
 }
@@ -104,35 +113,31 @@ const options = {
 **Have a try**:
 
 ```shell
-$ node demo exam2 table1 -aqfc file1
-{ _: [ 'table1' ],
+$ node demo app2 repo1 -avfc file1
+{ _: [ 'repo1' ],
   add:
    { _: [],
-     quick: true,
-     link: null,
+     verbose: true,
      file: { _: [ 'file1' ], copy: true } },
   remove: null }
-$ node demo exam2 table1 -rr file1
-{ _: [ 'table1' ],
+$ node demo app2 repo1 -rr dir1
+{ _: [ 'repo1' ],
   add: null,
-  remove: { _: [ 'file1' ], force: false, recursive: true } }
+  remove: { _: [ 'dir1' ], recursive: true } }
 ```
 
-## keyword option
+### Keyword External Name
 
-Keyword option is option that doesn't need to prefix with `-` or `--` . Just prefix the external name with `-`.
+This type of external name doesn't need `-` or `--` prefix to use. Just prefix the external name with `-`. Together with the module option, you can easily implement common interfaces of sub-module CLI program.
 
 **For Example**:
 
 ```javascript
-const options = {
-  clone: { set: '-clone', def: {
-    checkout: { set: ['n', 'no-checkout'], def: true },
-    bare: { set: ['bare'], def: false },
-  }},
-  init: { set: '-init', def: {
-    template: { set: ['template'], def: '' },
-    shared: { set: ['shared'], def: false }
+const options = { _: null,
+  git: { set: '-git', def: { _: null,
+    clone: { set: ['-clone'], def: {
+      bare: { set: ['bare'], def: false }
+    }}
   }}
 }
 ```
@@ -140,18 +145,13 @@ const options = {
 **Have a try**:
 
 ```shell
-$ node demo exam3 clone https://github.com/chinory/pargv-lite.git --bare
-{ _: [],
-  clone:
-   { _: [ 'https://github.com/chinory/pargv-lite.git' ],
-     checkout: true,
-     bare: true },
-  init: null }
+$ node demo app3 git clone repo --bare
+{ _: null, git: { _: null, clone: { _: [ 'repo' ], bare: true } } }
 ```
 
-## More Examples
+## Demos
 
-`options` can be written in JSON, also yaml. There are more `.yaml` options config in `demo/` to simulated other program. Try:
+`options` can be written in JSON, also yaml. There are more `.yaml` options demos in `demo/`. Try:
 
 ```shell
 $ node demo git
@@ -169,4 +169,4 @@ pargv-lite × 986,109 ops/sec
 
 ## License
 
-MIT 
+MIT © Chinory

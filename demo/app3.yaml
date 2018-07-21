@@ -1,0 +1,11 @@
+_: null
+git:
+  set: [-git]
+  def:
+    _: null
+    clone:
+      set: [-clone]
+      def:
+        bare:
+          set: [bare]
+          def: false

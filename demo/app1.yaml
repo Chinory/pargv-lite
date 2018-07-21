@@ -10,7 +10,8 @@ mode:
   def: default
 includes:
   set: [i, include]
-  reset: [clear-include]
+  reset: [clear-includes]
+  def: []
 unopened_option:
   def: false
 help:

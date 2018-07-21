@@ -1,12 +1,9 @@
 add:
   set: [a]
   def:
-    quick:
-      set: [q]
+    force:
+      set: [f]
       def: false
-    link:
-      set: [l]
-      def: {}
     file:
       set: [f]
       def:
@@ -16,9 +13,6 @@ add:
 remove:
   set: [r]
   def:
-    force:
-      set: [f]
-      def: false
     recursive:
       set: [r]
       def: false
