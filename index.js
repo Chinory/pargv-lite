@@ -146,11 +146,11 @@ module.exports = function parseArgv (argv, options, modulePath=[], optionPath=[]
                 if (options[optSet].def instanceof Array) {
                   opts[optSet].push(cur.slice(j + 1))
                 } else if (options[optSet].def instanceof Object) {
-                  const argv_sub = argv.slice(i)
-                  argv_sub[0] = '-' + argv_sub[0].slice(j + 1)
+                  const argvSub = argv.slice(i)
+                  argvSub[0] = '-' + argvSub[0].slice(j + 1)
                   modulePath.push(optSet)
                   optionPath.push(name)
-                  opts[optSet] = parseArgv(argv_sub, options[optSet].def, modulePath, optionPath)
+                  opts[optSet] = parseArgv(argvSub, options[optSet].def, modulePath, optionPath)
                   return opts
                 } else {
                   opts[optSet] = cur.slice(j + 1)
