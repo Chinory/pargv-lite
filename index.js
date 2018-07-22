@@ -1,6 +1,6 @@
 'use strict'
 module.exports = function parseArgv (argv, options, modulePath=[], optionPath=[]) {
-  const opts = {_: options._ === null ? null : (options._ && options._.slice() || [])}
+  const opts = {_: options._ === null ? null : (options._ === undefined ? [] : options._.slice())}
   const namesSet = {}
   const namesReset = {}
   const keywordsSet = {}
