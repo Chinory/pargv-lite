@@ -1,10 +1,8 @@
 # pargv-lite
 
-A pure, fast and powerful argv parser with force strict option checking.
+A fast & pure argv parser with just-enough features.
 
-- **Pure**: Just one function `parseArgv()`
-- **Fast**: 2x to 20x faster than the alternatives. See [Benchmarks](#Benchmarks)
-- **Powerful**: Please read on!
+pargv-lite is 2x to 20x faster than the alternatives, exports only one function, but also provides typical UNIX utilities behavior, option checking and sub-command, which can be configured with one JSON.
 
 ## Installation
 
@@ -73,7 +71,7 @@ opts = require('pargv-lite')(argv, options)
 3. **Object**: When set, enter a submodule. See Advanced / Module Option.
 3. **any**: When set, the old value will be overwritten by the new string value.
 
-`options.*.reset = []`  The external names to reset the option. When used, the value will be reset to the default. No arguments needed. This can be used to implement options such as `--no-*`, which has the advantage that you don't have to use a specific prefix.
+`options.*.reset = []`  The external names to reset the option. When used, the value will be reset to the default. No argument needed. This can be used to implement options such as `--no-*`.
 
 `options._` The setting of extra arguments which returned by `opts._`. Its type also determined the behavior:
 
@@ -85,7 +83,7 @@ opts = require('pargv-lite')(argv, options)
 
 ### Module Option
 
-Setting a module option means to use its `def` as `options` to parse subsequent `argv` , and take the parsed `opts` as the value of this option. This provides a explicit way to access submodules with their own option namespace from anywhere. Module option can't be reset, that guarantees a single module path, which can be obtained this way:
+Setting a module option means to use its `def` as `options` to parse subsequent `argv` , and take the parsed `opts` as the value of this option. This provides a explicit way to enter submodules with their own option namespace from anywhere. Module option can't be reset, that guarantees a single module path, which can be obtained this way:
 
 ```javascript
 const modulePath = []
@@ -128,7 +126,7 @@ $ node demo app2 repo1 -rr dir1
 
 ### Keyword External Name
 
-This type of external name doesn't need `-` or `--` prefix to use. Just prefix the external name with `-`. Together with the module option, you can easily implement common interfaces of sub-module CLI program.
+This type of external name doesn't need `-` or `--` prefix to use. Just prefix the external name with `-`. Together with the module option, you can easily implement sub-command.
 
 **For Example**:
 
@@ -151,7 +149,7 @@ $ node demo app3 git clone repo --bare
 
 ## Demos
 
-`options` can be written in JSON, also yaml. There are more `.yaml` options demos in `demo/`. Try:
+`options` can be written in JSON, so yaml is also OK. There are more `.yaml` options demos in `demo/`. Try:
 
 ```shell
 $ node demo git

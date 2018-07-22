@@ -1,7 +1,7 @@
 {
   "name": "pargv-lite",
-  "version": "1.5.2",
-  "description": "A pure, fast and powerful argv parser with force strict option checking.",
+  "version": "1.5.3",
+  "description": "A fast & pure argv parser with just-enough features.",
   "main": "index.js",
   "repository": {
     "type": "git",

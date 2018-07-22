@@ -1,5 +1,5 @@
 'use strict'
-module.exports = function parseArgv (argv, options, modulePath=[], optionPath=[]) {
+module.exports = function parse (argv, options, modulePath=[], optionPath=[]) {
   const opts = {_: options._ === null ? null : (options._ === undefined ? [] : options._.slice())}
   const namesSet = {}
   const namesReset = {}
@@ -75,7 +75,7 @@ module.exports = function parseArgv (argv, options, modulePath=[], optionPath=[]
               } else if (options[optSet].def instanceof Object) {
                 modulePath.push(optSet)
                 optionPath.push(name)
-                opts[optSet] = parseArgv(argv.slice(i + 1), options[optSet].def, modulePath, optionPath)
+                opts[optSet] = parse(argv.slice(i + 1), options[optSet].def, modulePath, optionPath)
                 return opts
               } else {
                 optNeedArg = optSet
@@ -150,7 +150,7 @@ module.exports = function parseArgv (argv, options, modulePath=[], optionPath=[]
                   argvSub[0] = '-' + argvSub[0].slice(j + 1)
                   modulePath.push(optSet)
                   optionPath.push(name)
-                  opts[optSet] = parseArgv(argvSub, options[optSet].def, modulePath, optionPath)
+                  opts[optSet] = parse(argvSub, options[optSet].def, modulePath, optionPath)
                   return opts
                 } else {
                   opts[optSet] = cur.slice(j + 1)
@@ -183,7 +183,7 @@ module.exports = function parseArgv (argv, options, modulePath=[], optionPath=[]
               } else if (options[optSet].def instanceof Object) {
                 modulePath.push(optSet)
                 optionPath.push(name)
-                opts[optSet] = parseArgv(argv.slice(i + 1), options[optSet].def, modulePath, optionPath)
+                opts[optSet] = parse(argv.slice(i + 1), options[optSet].def, modulePath, optionPath)
                 return opts
               } else {
                 optNeedArg = optSet
@@ -223,7 +223,7 @@ module.exports = function parseArgv (argv, options, modulePath=[], optionPath=[]
           } else if (options[optSet].def instanceof Object) {
             modulePath.push(optSet)
             optionPath.push(cur)
-            opts[optSet] = parseArgv(argv.slice(i + 1), options[optSet].def, modulePath, optionPath)
+            opts[optSet] = parse(argv.slice(i + 1), options[optSet].def, modulePath, optionPath)
             return opts
           } else {
             optNeedArg = optSet
