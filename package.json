@@ -1,8 +1,9 @@
 {
   "name": "pargv-lite",
-  "version": "1.5.3",
+  "version": "1.5.4",
   "description": "A fast & pure argv parser with just-enough features.",
   "main": "index.js",
+  "types": "index.d.ts",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/chinory/pargv-lite.git"
@@ -10,7 +11,13 @@
   "keywords": [
     "parse",
     "argv",
-    "getopts"
+    "cli",
+    "options",
+    "arguments",
+    "cli-parser",
+    "getopt",
+    "optimist",
+    "JSON"
   ],
   "author": "Chinory",
   "license": "MIT",

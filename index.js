@@ -1,5 +1,5 @@
 'use strict'
-module.exports = function parse (argv, options, modulePath=[], optionPath=[]) {
+function parse (argv, options, modulePath=[], optionPath=[]) {
   const opts = {_: options._ === null ? null : (options._ === undefined ? [] : options._.slice())}
   const namesSet = {}
   const namesReset = {}
@@ -252,3 +252,4 @@ module.exports = function parse (argv, options, modulePath=[], optionPath=[]) {
   }
   return opts
 }
+module.exports = parse
