@@ -51,7 +51,7 @@ function parse (argv, options, modulePath=[], optionPath=[]) {
             optNeedArg = undefined
           } else {
             if (opts._ === null) {
-              throw new Error(`doesn't accept extra arguments -- ${opts._[i]}`)
+              throw new Error(`doesn't accept extra arguments -- ${cur}`)
             }
             for (++i; i < argv.length; ++i) {
               opts._.push(argv[i])
