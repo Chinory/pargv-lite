@@ -4,7 +4,7 @@ git:
   def:
     _: null
     clone:
-      set: [-clone]
+      set: [-clone, clone]
       def:
         bare:
           set: [bare]

@@ -126,14 +126,14 @@ $ node demo app2 repo1 -rr dir1
 
 ### Keyword External Name
 
-This type of external name doesn't need `-` or `--` prefix to use. Just prefix the external name with `-`. Together with the module option, you can easily implement sub-command.
+This type of external name doesn't need `-` or `--` prefix to use. Just prefix the external name with `-`. Meanwhile you can also provide a way to use with prefix. Together with the module option, you can easily implement sub-command.
 
 **For Example**:
 
 ```javascript
 const options = { _: null,
-  git: { set: '-git', def: { _: null,
-    clone: { set: ['-clone'], def: {
+  git: { set: ['-git'], def: { _: null,
+    clone: { set: ['-clone', 'clone'], def: {
       bare: { set: ['bare'], def: false }
     }}
   }}
@@ -144,6 +144,8 @@ const options = { _: null,
 
 ```shell
 $ node demo app3 git clone repo --bare
+{ _: null, git: { _: null, clone: { _: [ 'repo' ], bare: true } } }
+$ node demo app3 git --clone repo --bare
 { _: null, git: { _: null, clone: { _: [ 'repo' ], bare: true } } }
 ```
 
