@@ -160,11 +160,11 @@ $ node demo git
 ## Benchmarks
 
 ```
-mri × 404,080 ops/sec
-yargs × 36,174 ops/sec
-getopts × 1,570,883 ops/sec
-minimist × 314,133 ops/sec
-pargv-lite × 986,109 ops/sec
+mri × 394,719 ops/sec
+yargs × 34,764 ops/sec
+getopts × 1,557,336 ops/sec
+minimist × 305,685 ops/sec
+pargv-lite × 1,006,265 ops/sec
 ```
 
 ## License

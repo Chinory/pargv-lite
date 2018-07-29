@@ -1,6 +1,6 @@
 {
   "name": "pargv-lite",
-  "version": "1.5.6",
+  "version": "1.6.0",
   "description": "A fast & pure argv parser with just-enough features.",
   "main": "index.js",
   "types": "index.d.ts",
