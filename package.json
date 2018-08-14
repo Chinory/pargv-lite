@@ -1,6 +1,6 @@
 {
   "name": "pargv-lite",
-  "version": "1.6.0",
+  "version": "1.6.1",
   "description": "A fast & pure argv parser with just-enough features.",
   "main": "index.js",
   "types": "index.d.ts",
@@ -27,5 +27,13 @@
   "homepage": "https://github.com/chinory/pargv-lite#readme",
   "engines": {
     "node": ">=4.0.0"
+  },
+  "devDependencies": {
+    "eslint": "^5.3.0",
+    "eslint-config-standard": "^11.0.0",
+    "eslint-plugin-import": "^2.13.0",
+    "eslint-plugin-node": "^7.0.1",
+    "eslint-plugin-promise": "^3.8.0",
+    "eslint-plugin-standard": "^3.1.0"
   }
 }

@@ -1,23 +1,33 @@
 'use strict'
-const isArray = Array.isArray
+const isArray = Array.isArray.bind(Array)
 const isObject = x => x !== null && typeof x === 'object'
+const isBoolean = x => typeof x === 'boolean'
 class ParseError extends Error {
   constructor (message, optionName, modulePath, optionPath) {
     super(`${message} -- ${optionName}`)
-    this.name = 'ParseError'
     this.optionName = optionName
     this.modulePath = modulePath
     this.optionPath = optionPath
   }
 }
-const strings = {
+ParseError.prototype.name = 'ParseError'
+const constants = {
   NO_EXTRA_ARGUMENT: "doesn't accept extra arguments",
   MISSING_ARGUMENT: 'missing option argument',
   INVAILD_OPTION: 'invalid option',
   CANT_SET_VALUE: "can't set value of option"
 }
-function parse (argv, options, modulePath=[], optionPath=[]) {
-  const opts = {_: options._ === null ? null : (options._ === undefined ? [] : options._.slice())}
+function parse (argv, options, modulePath = [], optionPath = []) {
+  // return value
+  const opts = {_:
+    options._ === null
+      ? null
+      : options._ === undefined
+        ? []
+        : options._.slice()
+  }
+
+  // cache options
   const namesSet = {}
   const namesReset = {}
   const keywordsSet = {}
@@ -40,7 +50,7 @@ function parse (argv, options, modulePath=[], optionPath=[]) {
                 keywordsSet[name.slice(1)] = opt
               }
             } else {
-              namesSet[name] = opt  
+              namesSet[name] = opt
             }
           }
         }
@@ -60,194 +70,200 @@ function parse (argv, options, modulePath=[], optionPath=[]) {
       }
     }
   }
+
+  // main loop: an on-line algorithm
   let i, optNeedArg, nameNeedArg
   for (i = 0; i < argv.length; ++i) {
     const cur = argv[i]
     if (cur[0] === '-') {
       if (cur[1] === '-') {
         if (cur.length === 2) {
-          if (optNeedArg) {
+          if (optNeedArg) { // leaf (/^--$/.test(cur) && optNeedArg) // example: --opt-need-arg --
             if (isArray(options[optNeedArg].def)) {
               opts[optNeedArg].push(cur)
             } else {
               opts[optNeedArg] = cur
             }
             optNeedArg = undefined
-          } else {
+          } else { // leaf (/^--$/.test(cur) && !optNeedArg) // example: --
             if (opts._ === null) {
-              throw new ParseError(strings.NO_EXTRA_ARGUMENT, cur, modulePath, optionPath)
+              throw new ParseError(constants.NO_EXTRA_ARGUMENT, cur, modulePath, optionPath)
+            } else {
+              for (++i; i < argv.length; ++i) {
+                opts._.push(argv[i])
+              }
+              return opts
             }
-            for (++i; i < argv.length; ++i) {
-              opts._.push(argv[i])
-            }
-            return opts
           }
         } else {
-          if (optNeedArg) {
-            throw new ParseError(strings.MISSING_ARGUMENT, nameNeedArg, modulePath, optionPath)
-          }
-          const eq = cur.indexOf('=', 2)
-          if (eq === -1) {
-            const name = cur.slice(2)
-            const optSet = namesSet[name]
-            if (optSet) {
-              const def = options[optSet].def
-              if (typeof def === 'boolean') {
-                opts[optSet] = !def
-              } else if (isArray(def)) {
-                optNeedArg = optSet
-                nameNeedArg = name
-              } else if (isObject(def)) {
-                modulePath.push(optSet)
-                optionPath.push(name)
-                opts[optSet] = parse(argv.slice(i + 1), def, modulePath, optionPath)
-                return opts
-              } else {
-                optNeedArg = optSet
-                nameNeedArg = name
-              }
-            } else {
-              const optReset = namesReset[name]
-              if (optReset) {
-                const def = options[optReset].def
-                if (isArray(def)) {
-                  opts[optReset] = def.slice()
+          if (optNeedArg) { // leaf (optNeedArg && leaf: /^--.+$/.test(cur)) // example: --opt-need-arg --opt
+            throw new ParseError(constants.MISSING_ARGUMENT, nameNeedArg, modulePath, optionPath)
+          } else {
+            const eq = cur.indexOf('=', 2)
+            if (~eq) { // leaf (!optNeedArg && /^--.+=.*$/.test(cur)) // example: --opt-need-arg=value
+              const name = cur.slice(2)
+              const optSet = namesSet[name]
+              if (optSet) {
+                const def = options[optSet].def
+                if (isBoolean(def)) {
+                  opts[optSet] = !def
+                } else if (isArray(def)) {
+                  optNeedArg = optSet
+                  nameNeedArg = name
+                } else if (isObject(def)) {
+                  modulePath.push(optSet)
+                  optionPath.push(name)
+                  opts[optSet] = parse(argv.slice(i + 1), def, modulePath, optionPath)
+                  return opts
                 } else {
-                  opts[optReset] = def
+                  optNeedArg = optSet
+                  nameNeedArg = name
                 }
               } else {
-                throw new ParseError(strings.INVAILD_OPTION, name, modulePath, optionPath)
+                const optReset = namesReset[name]
+                if (optReset) {
+                  const def = options[optReset].def
+                  if (isArray(def)) {
+                    opts[optReset] = def.slice()
+                  } else {
+                    opts[optReset] = def
+                  }
+                } else {
+                  throw new ParseError(constants.INVAILD_OPTION, name, modulePath, optionPath)
+                }
               }
-            }
-          } else {
-            const name = cur.slice(2, eq)
-            const optSet = namesSet[name]
-            if (optSet) {
-              const def = options[optSet].def
-              if (typeof def === 'boolean') {
-                throw new ParseError(strings.CANT_SET_VALUE, name, modulePath, optionPath)
-              } else if (isArray(def)) {
-                opts[optSet].push(cur.slice(eq + 1))
-              } else if (isObject(def)) {
-                throw new ParseError(strings.CANT_SET_VALUE, name, modulePath, optionPath)
+            } else { // leaf (!optNeedArg && /^--[^=]+$/.test(cur)) // example: --opt-need-arg value
+              const name = cur.slice(2, eq)
+              const optSet = namesSet[name]
+              if (optSet) {
+                const def = options[optSet].def
+                if (isBoolean(def)) {
+                  throw new ParseError(constants.CANT_SET_VALUE, name, modulePath, optionPath)
+                } else if (isArray(def)) {
+                  opts[optSet].push(cur.slice(eq + 1))
+                } else if (isObject(def)) {
+                  throw new ParseError(constants.CANT_SET_VALUE, name, modulePath, optionPath)
+                } else {
+                  opts[optSet] = cur.slice(eq + 1)
+                }
               } else {
-                opts[optSet] = cur.slice(eq + 1)
-              }
-            } else {
-              const optReset = namesReset[name]
-              if (optReset) {
-                throw new ParseError(strings.CANT_SET_VALUE, name, modulePath, optionPath)
-              } else {
-                throw new ParseError(strings.INVAILD_OPTION, name, modulePath, optionPath)
+                const optReset = namesReset[name]
+                if (optReset) {
+                  throw new ParseError(constants.CANT_SET_VALUE, name, modulePath, optionPath)
+                } else {
+                  throw new ParseError(constants.INVAILD_OPTION, name, modulePath, optionPath)
+                }
               }
             }
           }
         }
       } else {
         if (cur.length === 1) {
-          if (optNeedArg) {
+          if (optNeedArg) { // leaf (/^-$/.test(cur) && optNeedArg) // example: --opt-need-arg -
             if (isArray(options[optNeedArg].def)) {
               opts[optNeedArg].push(cur)
             } else {
               opts[optNeedArg] = cur
             }
             optNeedArg = undefined
-          } else {
+          } else { // leaf (/^-$/.test(cur) && !optNeedArg) // example: -
             if (opts._ === null) {
-              throw new ParseError(strings.NO_EXTRA_ARGUMENT, cur, modulePath, optionPath)
+              throw new ParseError(constants.NO_EXTRA_ARGUMENT, cur, modulePath, optionPath)
+            } else {
+              opts._.push(cur)
             }
-            opts._.push(cur)
           }
-        } else {
+        } else { // leaf (/^-[^-].*$/.test(cur)) // example: -czf value
           if (optNeedArg) {
-            throw new ParseError(strings.MISSING_ARGUMENT, nameNeedArg, modulePath, optionPath)
-          }
-          let last = cur.length - 1
-          for (let j = 1; j < last; ++j) {
-            const name = cur[j]
-            const optSet = namesSet[name]
-            if (optSet) {
-              const def = options[optSet].def
-              if (typeof def === 'boolean') {
-                opts[optSet] = !def
+            throw new ParseError(constants.MISSING_ARGUMENT, nameNeedArg, modulePath, optionPath)
+          } else {
+            let last = cur.length - 1
+            for (let j = 1; j < last; ++j) {
+              const name = cur[j]
+              const optSet = namesSet[name]
+              if (optSet) {
+                const def = options[optSet].def
+                if (isBoolean(def)) {
+                  opts[optSet] = !def
+                } else {
+                  if (isArray(def)) {
+                    opts[optSet].push(cur.slice(j + 1))
+                  } else if (isObject(def)) {
+                    const argvSub = argv.slice(i)
+                    argvSub[0] = '-' + argvSub[0].slice(j + 1)
+                    modulePath.push(optSet)
+                    optionPath.push(name)
+                    opts[optSet] = parse(argvSub, def, modulePath, optionPath)
+                    return opts
+                  } else {
+                    opts[optSet] = cur.slice(j + 1)
+                  }
+                  last = undefined
+                  break
+                }
               } else {
-                if (isArray(def)) {
-                  opts[optSet].push(cur.slice(j + 1))
+                const optReset = namesReset[name]
+                if (optReset) {
+                  const def = options[optReset].def
+                  if (isArray(def)) {
+                    opts[optReset] = def.slice()
+                  } else {
+                    opts[optReset] = def
+                  }
+                } else {
+                  throw new ParseError(constants.INVAILD_OPTION, name, modulePath, optionPath)
+                }
+              }
+            }
+            if (last) {
+              const name = cur[last]
+              const optSet = namesSet[name]
+              if (optSet) {
+                const def = options[optSet].def
+                if (isBoolean(def)) {
+                  opts[optSet] = !def
+                } else if (isArray(def)) {
+                  optNeedArg = optSet
+                  nameNeedArg = name
                 } else if (isObject(def)) {
-                  const argvSub = argv.slice(i)
-                  argvSub[0] = '-' + argvSub[0].slice(j + 1)
                   modulePath.push(optSet)
                   optionPath.push(name)
-                  opts[optSet] = parse(argvSub, def, modulePath, optionPath)
+                  opts[optSet] = parse(argv.slice(i + 1), def, modulePath, optionPath)
                   return opts
                 } else {
-                  opts[optSet] = cur.slice(j + 1)
+                  optNeedArg = optSet
+                  nameNeedArg = name
                 }
-                last = undefined
-                break
-              }
-            } else {
-              const optReset = namesReset[name]
-              if (optReset) {
-                const def = options[optReset].def
-                if (isArray(def)) {
-                  opts[optReset] = def.slice()
+              } else {
+                const optReset = namesReset[name]
+                if (optReset) {
+                  const def = options[optReset].def
+                  if (isArray(def)) {
+                    opts[optReset] = def.slice()
+                  } else {
+                    opts[optReset] = def
+                  }
                 } else {
-                  opts[optReset] = def
+                  throw new ParseError(constants.INVAILD_OPTION, name, modulePath, optionPath)
                 }
-              } else {
-                throw new ParseError(strings.INVAILD_OPTION, name, modulePath, optionPath)
-              }
-            }
-          }
-          if (last) {
-            const name = cur[last]
-            const optSet = namesSet[name]
-            if (optSet) {
-              const def = options[optSet].def
-              if (typeof def === 'boolean') {
-                opts[optSet] = !def
-              } else if (isArray(def)) {
-                optNeedArg = optSet
-                nameNeedArg = name
-              } else if (isObject(def)) {
-                modulePath.push(optSet)
-                optionPath.push(name)
-                opts[optSet] = parse(argv.slice(i + 1), def, modulePath, optionPath)
-                return opts
-              } else {
-                optNeedArg = optSet
-                nameNeedArg = name
-              }
-            } else {
-              const optReset = namesReset[name]
-              if (optReset) {
-                const def = options[optReset].def
-                if (isArray(def)) {
-                  opts[optReset] = def.slice()
-                } else {
-                  opts[optReset] = def
-                }
-              } else {
-                throw new ParseError(strings.INVAILD_OPTION, name, modulePath, optionPath)
               }
             }
           }
         }
       }
     } else {
-      if (optNeedArg) {
+      if (optNeedArg) { // leaf (/^[^-]/.test(cur) && optNeedArg) // example: --opt-need-arg some-words
         if (isArray(options[optNeedArg].def)) {
           opts[optNeedArg].push(cur)
         } else {
           opts[optNeedArg] = cur
         }
         optNeedArg = undefined
-      } else {
+      } else { // leaf (/^[^-]/.test(cur) && !optNeedArg) // example: some-words
         const optSet = keywordsSet[cur]
         if (optSet) {
           const def = options[optSet].def
-          if (typeof def === 'boolean') {
+          if (isBoolean(def)) {
             opts[optSet] = !def
           } else if (isArray(def)) {
             optNeedArg = optSet
@@ -272,7 +288,7 @@ function parse (argv, options, modulePath=[], optionPath=[]) {
             }
           } else {
             if (opts._ === null) {
-              throw new ParseError(strings.NO_EXTRA_ARGUMENT, cur, modulePath, optionPath)
+              throw new ParseError(constants.NO_EXTRA_ARGUMENT, cur, modulePath, optionPath)
             }
             opts._.push(cur)
           }
@@ -280,9 +296,12 @@ function parse (argv, options, modulePath=[], optionPath=[]) {
       }
     }
   }
+
+  // last check: if there are an option need argument
   if (optNeedArg) {
-    throw new ParseError(strings.MISSING_ARGUMENT, nameNeedArg, modulePath, optionPath)
+    throw new ParseError(constants.MISSING_ARGUMENT, nameNeedArg, modulePath, optionPath)
   }
+
   return opts
 }
 module.exports = parse

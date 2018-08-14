@@ -2,3 +2,4 @@
 .npmignore
 bench
 demo
+.eslintrc.json
