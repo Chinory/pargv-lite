@@ -1,17 +1,15 @@
-interface Option {
-  def?: boolean | string | string[] | Options | void
+interface OptionModel {
+  def?: boolean | string | string[] | OptionModule
   set?: string[]
   reset?: string[]
 }
 
-interface Options {
-  _?: string[] | null
-  [opt: string]: Option
+interface OptionModule {
+  [opt: string]: OptionModel
 }
 
-interface ParsedOptions {
-  _: string[] | null
-  [opt: string]: boolean | string | string[] | ParsedOptions | void
+interface Options {
+  [opt: string]: boolean | string | string[] | Options
 }
 
 /**
@@ -21,6 +19,6 @@ interface ParsedOptions {
  * @param optionPath Option names of modulePath.
  * @returns Parsed options.
  */
-declare function parse (argv: string[], options: Options, modulePath?: string[], optionPath?: string[]): ParsedOptions
+declare function parse (argv: string[], options: OptionModule, modulePath?: string[], optionPath?: string[]): ParsedOptions
 
 export = parse

@@ -1,5 +1,5 @@
 'use strict'
-const isArray = Array.isArray.bind(Array)
+const isArray = Array.isArray
 const isObject = x => x !== null && typeof x === 'object'
 const isBoolean = x => typeof x === 'boolean'
 class ParseError extends Error {
@@ -28,43 +28,49 @@ function parse (argv, options, modulePath = [], optionPath = []) {
   }
 
   // cache options
-  const namesSet = {}
-  const namesReset = {}
-  const keywordsSet = {}
-  const keywordsReset = {}
+  const set = [{}, {}, {}]
+  const reset = [{}, {}, {}]
+
   for (const opt in options) {
-    if (opt !== '_') {
-      const option = options[opt]
-      if (isArray(option.def)) {
-        opts[opt] = option.def.slice()
-      } else if (isObject(option.def)) {
-        opts[opt] = null
-      } else {
-        opts[opt] = option.def
-      }
-      if (option.set) {
-        for (const name of option.set) {
-          if (name.length !== 0) {
-            if (name[0] === '-') {
-              if (name.length !== 1) {
-                keywordsSet[name.slice(1)] = opt
-              }
-            } else {
-              namesSet[name] = opt
-            }
+    const option = options[opt]
+
+    // proc option.def
+    if (isArray(option.def)) {
+      opts[opt] = option.def.slice()
+    } else if (isObject(option.def)) {
+      opts[opt] = null
+    } else {
+      opts[opt] = option.def
+    }
+
+    // proc option.set
+    if (option.set) {
+      for (const name of option.set) {
+
+        if (name[0] === '-') {
+          if (name[1] === '-') {
+
           }
+          if (name.length !== 1) {
+            keywordsSet[name.slice(1)] = opt
+          }
+        } else {
+          keywordsSet[name] = opt
         }
       }
-      if (option.reset && (isArray(option.def) || !isObject(option.def))) {
-        for (const name of option.reset) {
-          if (name.length !== 0) {
-            if (name[0] === '-') {
-              if (name.length !== 1) {
-                keywordsReset[name.slice(1)] = opt
-              }
-            } else {
-              namesReset[name] = opt
+      
+    }
+
+    // proc option.reset
+    if (option.reset && (isArray(option.def) || !isObject(option.def))) {
+      for (const name of option.reset) {
+        if (name.length !== 0) {
+          if (name[0] === '-') {
+            if (name.length !== 1) {
+              keywordsReset[name.slice(1)] = opt
             }
+          } else {
+            namesReset[name] = opt
           }
         }
       }
