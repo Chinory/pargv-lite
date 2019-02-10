@@ -29,7 +29,7 @@ require("pargv-lite")(process.argv, 2, opts, "", model, (err, arg, opts, name) =
 });
 console.log(`[result] ${path}\n`, opts);
 ```
-```shell
+```
 $ node demo --what -what --bool=str --nega=str --mod=str --str='new string' -- --str
 [error] / invaild option -- -w
 [error] / invaild option -- -h
@@ -42,6 +42,9 @@ $ node demo --what -what --bool=str --nega=str --mod=str --str='new string' -- -
   str: 'new string',
   array: [ 'default', '--what', 't', '--str' ],
   module: null }
+```
+
+```
 $ node demo --str 'new string' --reset -a "by -a" "by --" -bmx 100 no-more-arg
 [module] / {"bool":true,"str":"string","array":["default","by -a","by --"],"module":null}
 [error] /module/ uncaptured argument -- no-more-arg
@@ -51,6 +54,9 @@ $ node demo --str 'new string' --reset -a "by -a" "by --" -bmx 100 no-more-arg
   str: 'string',
   array: [ 'default', 'by -a', 'by --' ],
   module: { x: '100', y: '2' } }
+```
+
+```
 $ node demo first --clear second -a third
 [module] / {"bool":false,"str":"string","array":["default","second","third"],"module":null}
 [result] /
@@ -64,12 +70,14 @@ For detailed, see [index.d.ts](index.d.ts)
 
 ## Benchmarks
 
+Intel Core i7 CPU @ 2.60GHz, node v11.6.0
+
 ```
-mri x 542,287 ops/sec ±2.07% (89 runs sampled)
-yargs x 34,837 ops/sec ±2.44% (89 runs sampled)
 getopts x 1,218,598 ops/sec ±1.44% (93 runs sampled)
-minimist x 324,039 ops/sec ±0.11% (96 runs sampled)
 pargv-lite x 1,093,233 ops/sec ±0.27% (93 runs sampled)
+mri x 542,287 ops/sec ±2.07% (89 runs sampled)
+minimist x 324,039 ops/sec ±0.11% (96 runs sampled)
+yargs x 34,837 ops/sec ±2.44% (89 runs sampled)
 ```
 
 ## License
