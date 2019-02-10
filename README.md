@@ -16,40 +16,48 @@ $ npm i pargv-lite
 let opts = {}, path = "", model = {
   bool: { set: ["-b", "--bool"], reset: ["-B", "--nega"], def: false },
   str: { set: ["--str"], reset: ["--reset"], def: "string" },
-  array: { set: ["--", "-a"], reset: ["--clear"], def: ["by default"] },
-  module: { set: ["m", "-m"], def: {
+  array: { set: ["--", "-a"], reset: ["--clear"], def: ["default"] },
+  module: { set: ["m", "-m", "--mod"], def: {
     x: { def: "1", set: ["x", "-x"] },
     y: { def: "2", set: ["y", "-y"] }
   } }
 };
 require("pargv-lite")(process.argv, 2, opts, "", model, (err, arg, opts, name) => {
-  err ? console.error("[error] %s %s -- %s", path, err, arg) 
+  err ? console.error("[error] %s %s -- %s", path + name + "/", err, arg) 
     : console.log("[module] %s %j", path += name + "/", opts);
   return true; // continue parsing
 });
 console.log(`[result] ${path}\n`, opts);
 ```
 ```shell
-$ node demo --what -what --bool=str --nega=str --str='new string'
-[error]  invaild option -- -w
-[error]  invaild option -- -h
-[error]  can not set value of boolean option -- --bool
-[error]  can not set value of reset option -- --nega
-[module] / {"bool":false,"str":"new string","array":["by default","--what","t"],"module":null}
+$ node demo --what -what --bool=str --nega=str --mod=str --str='new string' -- --str
+[error] / invaild option -- -w
+[error] / invaild option -- -h
+[error] / can not set value of boolean option -- --bool
+[error] / can not set value of reset option -- --nega
+[error] / can not set value of module option -- --mod
+[module] / {"bool":false,"str":"new string","array":["default","--what","t","--str"],"module":null}
 [result] /
  { bool: false,
   str: 'new string',
-  array: [ 'by default', '--what', 't' ],
+  array: [ 'default', '--what', 't', '--str' ],
   module: null }
 $ node demo --str 'new string' --reset -a "by -a" "by --" -bmx 100 no-more-arg
-[module] / {"bool":true,"str":"string","array":["by default","by -a","by --"],"module":null}
-[error] / uncaptured argument -- no-more-arg
+[module] / {"bool":true,"str":"string","array":["default","by -a","by --"],"module":null}
+[error] /module/ uncaptured argument -- no-more-arg
 [module] /module/ {"x":"100","y":"2"}
 [result] /module/
  { bool: true,
   str: 'string',
-  array: [ 'by default', 'by -a', 'by --' ],
+  array: [ 'default', 'by -a', 'by --' ],
   module: { x: '100', y: '2' } }
+$ node demo first --clear second -a third
+[module] / {"bool":false,"str":"string","array":["default","second","third"],"module":null}
+[result] /
+ { bool: false,
+  str: 'string',
+  array: [ 'default', 'second', 'third' ],
+  module: null }
 ```
 
 For detailed, see [index.d.ts](index.d.ts)
