@@ -7,7 +7,7 @@ Using a readable JSON object to define what you want, pargv-lite will ensure you
 ## Installation
 
 ```shell
-npm i pargv-lite
+$ npm i pargv-lite
 ```
 
 ## Usage

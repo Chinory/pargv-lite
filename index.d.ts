@@ -3,7 +3,7 @@ type option = string
 
 interface OptionValueModel {
     /** default value, determines the type of this option */
-    _: string | boolean | OptionModuleModel | string[] 
+    def: string | boolean | OptionModuleModel | string[] 
     /** options to set the value */
     set?: option[]
     /** options to reset the value */
