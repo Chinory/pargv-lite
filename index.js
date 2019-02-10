@@ -1,313 +1,130 @@
-'use strict'
-const isArray = Array.isArray
-const isObject = x => x !== null && typeof x === 'object'
-const isBoolean = x => typeof x === 'boolean'
-class ParseError extends Error {
-  constructor (message, optionName, modulePath, optionPath) {
-    super(`${message} -- ${optionName}`)
-    this.optionName = optionName
-    this.modulePath = modulePath
-    this.optionPath = optionPath
-  }
-}
-ParseError.prototype.name = 'ParseError'
-const constants = {
-  NO_EXTRA_ARGUMENT: "doesn't accept extra arguments",
-  MISSING_ARGUMENT: 'missing option argument',
-  INVAILD_OPTION: 'invalid option',
-  CANT_SET_VALUE: "can't set value of option"
-}
-function parse (argv, options, modulePath = [], optionPath = []) {
-  // return value
-  const opts = {_:
-    options._ === null
-      ? null
-      : options._ === undefined
-        ? []
-        : options._.slice()
-  }
-
-  // cache options
-  const set = [{}, {}, {}]
-  const reset = [{}, {}, {}]
-
-  for (const opt in options) {
-    const option = options[opt]
-
-    // proc option.def
-    if (isArray(option.def)) {
-      opts[opt] = option.def.slice()
-    } else if (isObject(option.def)) {
-      opts[opt] = null
+"use strict";
+module.exports = function parse (argv, i, module, moduleName, moduleModel, callback) {
+  var optSet = {}, optReset = {}, opt, optUndone, key, keyUnnamed, value, def, opts, j;
+  for (key in moduleModel) {
+    value = moduleModel[key], def = value.def;
+    if (Array.isArray(def)) {
+      module[key] = def.slice();
+      if ((opts = value.set)) for (j = 0; j < opts.length; ++j) if ((opt = opts[j]) !== "--") optSet[opt] = key; else keyUnnamed = key; 
+      if ((opts = value.reset)) for (j = 0; j < opts.length; ++j) if ((opt = opts[j]) !== "--") optReset[opt] = key;
+    } else if (def !== null && typeof def === "object") {
+      module[key] = null;
+      if ((opts = value.set)) for (j = 0; j < opts.length; ++j) if ((opt = opts[j]) !== "--") optSet[opt] = key;
     } else {
-      opts[opt] = option.def
+      module[key] = def;
+      if ((opts = value.set)) for (j = 0; j < opts.length; ++j) if ((opt = opts[j]) !== "--") optSet[opt] = key;
+      if ((opts = value.reset)) for (j = 0; j < opts.length; ++j) if ((opt = opts[j]) !== "--") optReset[opt] = key;
     }
-
-    // proc option.set
-    if (option.set) {
-      for (const name of option.set) {
-
-        if (name[0] === '-') {
-          if (name[1] === '-') {
-
+  }
+  for (var arg; i < argv.length; ++i) {
+    arg = argv[i];
+    if (optUndone) {
+      key = optSet[optUndone];
+      if (Array.isArray(module[key])) module[key].push(arg); else module[key] = arg;
+      optUndone = "";
+    } else if (arg[0] !== "-" || arg === "-") {
+      if ((key = optSet[arg])) {
+        def = moduleModel[key].def;
+        if (Array.isArray(def)) optUndone = arg;
+        else if (def !== null && typeof def === "object") {
+          if (!callback("", "", module, moduleName, moduleModel)) return;
+          return parse(argv, i + 1, module[key] = {}, key, def, callback);
+        } else if (typeof def === "boolean") module[key] = !def;
+        else optUndone = arg;
+      } else if ((key = optReset[arg])) {
+        def = moduleModel[key].def;
+        module[key] = Array.isArray(def) ? def.slice() : def;
+      } else if (keyUnnamed) {
+        module[keyUnnamed].push(arg);
+      } else if (!callback("uncaptured argument", arg, module, moduleName, moduleModel)) {
+        return;
+      }
+    } else if (arg === "--") {
+      if (keyUnnamed) {
+        for (++i; i < argv.length; ++i) module[keyUnnamed].push(argv[i]);
+      } else if (!callback("can not set unnamed arguments", "--", module, moduleName, moduleModel)) {
+        return;
+      }
+    } else if (arg[1] === "-") {
+      var eq = arg.indexOf("=");
+      if (~eq) {
+        opt = arg.slice(0, eq), value = arg.slice(eq + 1);
+        if ((key = optSet[opt])) {
+          def = moduleModel[key].def;
+          if (Array.isArray(def)) module[key].push(value);
+          else if (def !== null && typeof def === "object") {
+            if (!callback("can not set value of module option", opt, module, moduleName, moduleModel)) return;
+          } else if (typeof def === "boolean") {
+            if (!callback("can not set value of boolean option", opt, module, moduleName, moduleModel)) return;
+          } else module[key] = value;
+        } else if (optReset[opt]) {
+          if (!callback("can not set value of reset option", opt, module, moduleName, moduleModel)) return;
+        } else if (keyUnnamed) {
+          module[keyUnnamed].push(arg);
+        } else if (!callback("uncaptured argument", arg, module, moduleName, moduleModel)) {
+          return;
+        }
+      } else if ((key = optSet[arg])) {
+        def = moduleModel[key].def;
+        if (Array.isArray(def)) optUndone = arg;
+        else if (def !== null && typeof def === "object") {
+          if (!callback("", "", module, moduleName, moduleModel)) return;
+          return parse(argv, i + 1, module[key] = {}, key, def, callback);
+        } else if (typeof def === "boolean") module[key] = !def;
+        else optUndone = arg;
+      } else if ((key = optReset[arg])) {
+        def = moduleModel[key].def;
+        module[key] = Array.isArray(def) ? def.slice() : def;
+      } else if (keyUnnamed) {
+        module[keyUnnamed].push(arg);
+      } else if (!callback("uncaptured argument", arg, module, moduleName, moduleModel)) {
+        return;
+      }
+    } else single: {
+      var last = arg.length - 1;
+      for (j = 1; j < last; ++j) { 
+        opt = "-" + arg[j];
+        if ((key = optSet[opt])) {
+          def = moduleModel[key].def;
+          if (Array.isArray(def)) {
+            module[key].push(arg.slice(j + 1));
+            break single;
+          } else if (def !== null && typeof def === "object") {
+            if (!callback("", "", module, moduleName, moduleModel)) return;
+            argv[i] = "-" + arg.slice(j + 1);
+            parse(argv, i, module[key] = {}, key, def, callback);
+            argv[i] = arg;
+            return;
+          } else if (typeof def === "boolean") {
+            module[key] = !def;
+          } else {
+            module[key] = arg.slice(j + 1);
+            break single;
           }
-          if (name.length !== 1) {
-            keywordsSet[name.slice(1)] = opt
-          }
-        } else {
-          keywordsSet[name] = opt
+        } else if ((key = optReset[opt])) {
+          def = moduleModel[key].def;
+          module[key] = Array.isArray(def) ? def.slice() : def;
+        } else if (!callback("invaild option", opt, module, moduleName, moduleModel)) {
+          return;
         }
       }
-      
-    }
-
-    // proc option.reset
-    if (option.reset && (isArray(option.def) || !isObject(option.def))) {
-      for (const name of option.reset) {
-        if (name.length !== 0) {
-          if (name[0] === '-') {
-            if (name.length !== 1) {
-              keywordsReset[name.slice(1)] = opt
-            }
-          } else {
-            namesReset[name] = opt
-          }
-        }
+      opt = "-" + arg[last];
+      if ((key = optSet[opt])) {
+        def = moduleModel[key].def;
+        if (Array.isArray(def)) optUndone = opt;
+        else if (def !== null && typeof def === "object") {
+          if (!callback("", "", module, moduleName, moduleModel)) return;
+          return parse(argv, i + 1, module[key] = {}, key, def, callback);
+        } else if (typeof def === "boolean") module[key] = !def;
+        else optUndone = opt;
+      } else if ((key = optReset[opt])) {
+        def = moduleModel[key].def;
+        module[key] = Array.isArray(def) ? def.slice() : def;
+      } else if (!callback("invaild option", opt, module, moduleName, moduleModel)) {
+        return;
       }
     }
   }
-
-  // main loop: an on-line algorithm
-  let i, optNeedArg, nameNeedArg
-  for (i = 0; i < argv.length; ++i) {
-    const cur = argv[i]
-    if (cur[0] === '-') {
-      if (cur[1] === '-') {
-        if (cur.length === 2) {
-          if (optNeedArg) { // leaf (/^--$/.test(cur) && optNeedArg) // example: --opt-need-arg --
-            if (isArray(options[optNeedArg].def)) {
-              opts[optNeedArg].push(cur)
-            } else {
-              opts[optNeedArg] = cur
-            }
-            optNeedArg = undefined
-          } else { // leaf (/^--$/.test(cur) && !optNeedArg) // example: --
-            if (opts._ === null) {
-              throw new ParseError(constants.NO_EXTRA_ARGUMENT, cur, modulePath, optionPath)
-            } else {
-              for (++i; i < argv.length; ++i) {
-                opts._.push(argv[i])
-              }
-              return opts
-            }
-          }
-        } else {
-          if (optNeedArg) { // leaf (optNeedArg && leaf: /^--.+$/.test(cur)) // example: --opt-need-arg --opt
-            throw new ParseError(constants.MISSING_ARGUMENT, nameNeedArg, modulePath, optionPath)
-          } else {
-            const eq = cur.indexOf('=', 2)
-            if (~eq) { // leaf (!optNeedArg && /^--.+=.*$/.test(cur)) // example: --opt-need-arg=value
-              const name = cur.slice(2)
-              const optSet = namesSet[name]
-              if (optSet) {
-                const def = options[optSet].def
-                if (isBoolean(def)) {
-                  opts[optSet] = !def
-                } else if (isArray(def)) {
-                  optNeedArg = optSet
-                  nameNeedArg = name
-                } else if (isObject(def)) {
-                  modulePath.push(optSet)
-                  optionPath.push(name)
-                  opts[optSet] = parse(argv.slice(i + 1), def, modulePath, optionPath)
-                  return opts
-                } else {
-                  optNeedArg = optSet
-                  nameNeedArg = name
-                }
-              } else {
-                const optReset = namesReset[name]
-                if (optReset) {
-                  const def = options[optReset].def
-                  if (isArray(def)) {
-                    opts[optReset] = def.slice()
-                  } else {
-                    opts[optReset] = def
-                  }
-                } else {
-                  throw new ParseError(constants.INVAILD_OPTION, name, modulePath, optionPath)
-                }
-              }
-            } else { // leaf (!optNeedArg && /^--[^=]+$/.test(cur)) // example: --opt-need-arg value
-              const name = cur.slice(2, eq)
-              const optSet = namesSet[name]
-              if (optSet) {
-                const def = options[optSet].def
-                if (isBoolean(def)) {
-                  throw new ParseError(constants.CANT_SET_VALUE, name, modulePath, optionPath)
-                } else if (isArray(def)) {
-                  opts[optSet].push(cur.slice(eq + 1))
-                } else if (isObject(def)) {
-                  throw new ParseError(constants.CANT_SET_VALUE, name, modulePath, optionPath)
-                } else {
-                  opts[optSet] = cur.slice(eq + 1)
-                }
-              } else {
-                const optReset = namesReset[name]
-                if (optReset) {
-                  throw new ParseError(constants.CANT_SET_VALUE, name, modulePath, optionPath)
-                } else {
-                  throw new ParseError(constants.INVAILD_OPTION, name, modulePath, optionPath)
-                }
-              }
-            }
-          }
-        }
-      } else {
-        if (cur.length === 1) {
-          if (optNeedArg) { // leaf (/^-$/.test(cur) && optNeedArg) // example: --opt-need-arg -
-            if (isArray(options[optNeedArg].def)) {
-              opts[optNeedArg].push(cur)
-            } else {
-              opts[optNeedArg] = cur
-            }
-            optNeedArg = undefined
-          } else { // leaf (/^-$/.test(cur) && !optNeedArg) // example: -
-            if (opts._ === null) {
-              throw new ParseError(constants.NO_EXTRA_ARGUMENT, cur, modulePath, optionPath)
-            } else {
-              opts._.push(cur)
-            }
-          }
-        } else { // leaf (/^-[^-].*$/.test(cur)) // example: -czf value
-          if (optNeedArg) {
-            throw new ParseError(constants.MISSING_ARGUMENT, nameNeedArg, modulePath, optionPath)
-          } else {
-            let last = cur.length - 1
-            for (let j = 1; j < last; ++j) {
-              const name = cur[j]
-              const optSet = namesSet[name]
-              if (optSet) {
-                const def = options[optSet].def
-                if (isBoolean(def)) {
-                  opts[optSet] = !def
-                } else {
-                  if (isArray(def)) {
-                    opts[optSet].push(cur.slice(j + 1))
-                  } else if (isObject(def)) {
-                    const argvSub = argv.slice(i)
-                    argvSub[0] = '-' + argvSub[0].slice(j + 1)
-                    modulePath.push(optSet)
-                    optionPath.push(name)
-                    opts[optSet] = parse(argvSub, def, modulePath, optionPath)
-                    return opts
-                  } else {
-                    opts[optSet] = cur.slice(j + 1)
-                  }
-                  last = undefined
-                  break
-                }
-              } else {
-                const optReset = namesReset[name]
-                if (optReset) {
-                  const def = options[optReset].def
-                  if (isArray(def)) {
-                    opts[optReset] = def.slice()
-                  } else {
-                    opts[optReset] = def
-                  }
-                } else {
-                  throw new ParseError(constants.INVAILD_OPTION, name, modulePath, optionPath)
-                }
-              }
-            }
-            if (last) {
-              const name = cur[last]
-              const optSet = namesSet[name]
-              if (optSet) {
-                const def = options[optSet].def
-                if (isBoolean(def)) {
-                  opts[optSet] = !def
-                } else if (isArray(def)) {
-                  optNeedArg = optSet
-                  nameNeedArg = name
-                } else if (isObject(def)) {
-                  modulePath.push(optSet)
-                  optionPath.push(name)
-                  opts[optSet] = parse(argv.slice(i + 1), def, modulePath, optionPath)
-                  return opts
-                } else {
-                  optNeedArg = optSet
-                  nameNeedArg = name
-                }
-              } else {
-                const optReset = namesReset[name]
-                if (optReset) {
-                  const def = options[optReset].def
-                  if (isArray(def)) {
-                    opts[optReset] = def.slice()
-                  } else {
-                    opts[optReset] = def
-                  }
-                } else {
-                  throw new ParseError(constants.INVAILD_OPTION, name, modulePath, optionPath)
-                }
-              }
-            }
-          }
-        }
-      }
-    } else {
-      if (optNeedArg) { // leaf (/^[^-]/.test(cur) && optNeedArg) // example: --opt-need-arg some-words
-        if (isArray(options[optNeedArg].def)) {
-          opts[optNeedArg].push(cur)
-        } else {
-          opts[optNeedArg] = cur
-        }
-        optNeedArg = undefined
-      } else { // leaf (/^[^-]/.test(cur) && !optNeedArg) // example: some-words
-        const optSet = keywordsSet[cur]
-        if (optSet) {
-          const def = options[optSet].def
-          if (isBoolean(def)) {
-            opts[optSet] = !def
-          } else if (isArray(def)) {
-            optNeedArg = optSet
-            nameNeedArg = cur
-          } else if (isObject(def)) {
-            modulePath.push(optSet)
-            optionPath.push(cur)
-            opts[optSet] = parse(argv.slice(i + 1), def, modulePath, optionPath)
-            return opts
-          } else {
-            optNeedArg = optSet
-            nameNeedArg = cur
-          }
-        } else {
-          const optReset = keywordsReset[cur]
-          if (optReset) {
-            const def = options[optReset].def
-            if (isArray(def)) {
-              opts[optReset] = def.slice()
-            } else {
-              opts[optReset] = def
-            }
-          } else {
-            if (opts._ === null) {
-              throw new ParseError(constants.NO_EXTRA_ARGUMENT, cur, modulePath, optionPath)
-            }
-            opts._.push(cur)
-          }
-        }
-      }
-    }
-  }
-
-  // last check: if there are an option need argument
-  if (optNeedArg) {
-    throw new ParseError(constants.MISSING_ARGUMENT, nameNeedArg, modulePath, optionPath)
-  }
-
-  return opts
-}
-module.exports = parse
+  if (optUndone) if (!callback("lack of argument", optUndone, module, moduleName, moduleModel)) return;
+  callback("", "", module, moduleName, moduleModel);
+};

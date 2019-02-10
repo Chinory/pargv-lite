@@ -1,172 +1,70 @@
 # pargv-lite
 
-A fast & pure argv parser with just-enough features.
+Simple and reliable high performance command-line options parser.
 
-pargv-lite is 2x to 20x faster than the alternatives, exports only one function, but also provides typical UNIX utilities behavior, option checking and sub-command, which can be configured with one JSON.
+Using a readable JSON object to define what you want, pargv-lite will ensure you get the right data.
 
 ## Installation
 
 ```shell
-$ npm i pargv-lite
+npm i pargv-lite
 ```
 
 ## Usage
 
-### Quick start
-
 ```javascript
-const BASENAME = require('path').basename(process.argv[1])
-const opts = (() => {
-  const parseArgv = require('pargv-lite')
-  const options = {
-    action: { def: true, set: ['n', 'dry-run'], reset: ['a'] },
-    verbose: { def: false, set: ['v', 'verbose'] },
-    mode: { def: 'default', set: ['m', 'mode'] },
-    includes: { def: [], set: ['i', 'include'], reset: ['clear-includes'] },
-    unopened_option: { def: false },
-    help: { def: false, set: ['h', 'help'] },
-    version: { def: false, set: ['version'] }
-  }
-  try {
-    return parseArgv(process.argv.slice(2), options)
-  } catch (err) {
-    console.error(`${BASENAME}: ${err.message}`)
-    console.error(`Try '${BASENAME} --help' for more information.`)
-    process.exit(1)
-  }
-})()
-console.log(opts)
+let opts = {}, path = "", model = {
+  bool: { set: ["-b", "--bool"], reset: ["-B", "--nega"], def: false },
+  str: { set: ["--str"], reset: ["--reset"], def: "string" },
+  array: { set: ["--", "-a"], reset: ["--clear"], def: ["by default"] },
+  module: { set: ["m", "-m"], def: {
+    x: { def: "1", set: ["x", "-x"] },
+    y: { def: "2", set: ["y", "-y"] }
+  } }
+};
+require("pargv-lite")(process.argv, 2, opts, "", model, (err, arg, opts, name) => {
+  err ? console.error("[error] %s %s -- %s", path, err, arg) 
+    : console.log("[module] %s %j", path += name + "/", opts);
+  return true; // continue parsing
+});
+console.log(`[result] ${path}\n`, opts);
 ```
-**Have a try**: Change directory to the repository's root then:
-
-
 ```shell
-$ node demo app1 -na file1 --verbose --mode=old -mnew -i- --include -- -- --help
-{ _: [ 'file1', '--help' ],
-  action: true,
-  verbose: true,
-  mode: 'new',
-  includes: [ '-', '--' ],
-  unopened_option: false,
-  help: false,
-  version: false }
+$ node demo --what -what --bool=str --nega=str --str='new string'
+[error]  invaild option -- -w
+[error]  invaild option -- -h
+[error]  can not set value of boolean option -- --bool
+[error]  can not set value of reset option -- --nega
+[module] / {"bool":false,"str":"new string","array":["by default","--what","t"],"module":null}
+[result] /
+ { bool: false,
+  str: 'new string',
+  array: [ 'by default', '--what', 't' ],
+  module: null }
+$ node demo --str 'new string' --reset -a "by -a" "by --" -bmx 100 no-more-arg
+[module] / {"bool":true,"str":"string","array":["by default","by -a","by --"],"module":null}
+[error] / uncaptured argument -- no-more-arg
+[module] /module/ {"x":"100","y":"2"}
+[result] /module/
+ { bool: true,
+  str: 'string',
+  array: [ 'by default', 'by -a', 'by --' ],
+  module: { x: '100', y: '2' } }
 ```
 
-### API
-
-```javascript
-opts = require('pargv-lite')(argv, options)
-```
-
-**argv**: Arguments array, usually set to `process.argv.slice(2)`.
-
-**options**: An **Object** that declares options. The key of `options` is the internal name of an option while the value is its attribute.
-
-`options.*.set = []`  The external names to set the option. Empty or **undefined** means users can't set it externally.
-
-`options.*.def` is the default value. Its type determined the option's type and behavior:
-
-1. **boolean**: When set, the value will be set to the negative of the default. 
-2. **Array**: When set, the new string value will be appended to the array.
-3. **Object**: When set, enter a submodule. See Advanced / Module Option.
-3. **any**: When set, the old value will be overwritten by the new string value.
-
-`options.*.reset = []`  The external names to reset the option. When used, the value will be reset to the default. No argument needed. This can be used to implement options such as `--no-*`.
-
-`options._` The setting of extra arguments which returned by `opts._`. Its type also determined the behavior:
-
-1. **null**: Reject any extra arguments. Settings will cause an error. `opts._` will always be **null**.
-2. **undefined**: Create an **Array** as `opts._`.
-3. **any**: Use `options._.slice()` to make a copy of it as `opts._`.
-
-## Advanced
-
-### Module Option
-
-Setting a module option means to use its `def` as `options` to parse subsequent `argv` , and take the parsed `opts` as the value of this option. This provides a explicit way to enter submodules with their own option namespace from anywhere. Module option can't be reset, that guarantees a single module path, which can be obtained this way:
-
-```javascript
-const modulePath = []
-opts = require('pargv-lite')(argv, options, modulePath)
-```
-
-If a module option isn't used, its value will be **null**.
-
-**For Example**: 
-
-```javascript
-const options = {
-  add: { set: ['a'], def: {
-    verbose: { set: ['v'], def: false },
-    file: { set: ['f'], def: {
-      copy: { set: ['c'], def: false }
-    }}
-  }},
-  remove: { set: ['r'], def: {
-    recursive: { set: ['r'], def: false },
-  }},
-}
-```
-
-**Have a try**:
-
-```shell
-$ node demo app2 repo1 -avfc file1
-{ _: [ 'repo1' ],
-  add:
-   { _: [],
-     verbose: true,
-     file: { _: [ 'file1' ], copy: true } },
-  remove: null }
-$ node demo app2 repo1 -rr dir1
-{ _: [ 'repo1' ],
-  add: null,
-  remove: { _: [ 'dir1' ], recursive: true } }
-```
-
-### Keyword External Name
-
-This type of external name doesn't need `-` or `--` prefix to use. Just prefix the external name with `-`. Meanwhile you can also provide a way to use with prefix. Together with the module option, you can easily implement sub-command.
-
-**For Example**:
-
-```javascript
-const options = { _: null,
-  git: { set: ['-git'], def: { _: null,
-    clone: { set: ['-clone', 'clone'], def: {
-      bare: { set: ['bare'], def: false }
-    }}
-  }}
-}
-```
-
-**Have a try**:
-
-```shell
-$ node demo app3 git clone repo --bare
-{ _: null, git: { _: null, clone: { _: [ 'repo' ], bare: true } } }
-$ node demo app3 git --clone repo --bare
-{ _: null, git: { _: null, clone: { _: [ 'repo' ], bare: true } } }
-```
-
-## Demos
-
-`options` can be written in JSON, so yaml is also OK. There are more `.yaml` options demos in `demo/`. Try:
-
-```shell
-$ node demo git
-```
+For detailed, see [index.d.ts](index.d.ts)
 
 ## Benchmarks
 
 ```
-mri × 394,719 ops/sec
-yargs × 34,764 ops/sec
-getopts × 1,557,336 ops/sec
-minimist × 305,685 ops/sec
-pargv-lite × 1,006,265 ops/sec
+mri x 542,287 ops/sec ±2.07% (89 runs sampled)
+yargs x 34,837 ops/sec ±2.44% (89 runs sampled)
+getopts x 1,218,598 ops/sec ±1.44% (93 runs sampled)
+minimist x 324,039 ops/sec ±0.11% (96 runs sampled)
+pargv-lite x 1,093,233 ops/sec ±0.27% (93 runs sampled)
 ```
 
 ## License
 
 MIT © Chinory
+

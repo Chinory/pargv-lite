@@ -1,5 +1,5 @@
 .gitignore
 .npmignore
-bench
-demo
 .eslintrc.json
+bench.js
+demo.js
