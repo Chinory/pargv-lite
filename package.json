@@ -1,6 +1,6 @@
 {
   "name": "pargv-lite",
-  "version": "2.0.1",
+  "version": "2.0.2",
   "description": "Simple and reliable high performance command-line options parser.",
   "main": "index.js",
   "types": "index.d.ts",
