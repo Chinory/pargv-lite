@@ -15,7 +15,7 @@ module.exports = function parse (argv, i, module, moduleName, moduleModel, callb
       if ((opts = value.set)) for (j = 0; j < opts.length; ++j) if ((opt = opts[j]) !== "--") optSet[opt] = key;
       if ((opts = value.reset)) for (j = 0; j < opts.length; ++j) if ((opt = opts[j]) !== "--") optReset[opt] = key;
     }
-  }
+  } opts = undefined;
   for (var arg; i < argv.length; ++i) {
     arg = argv[i];
     if (optUndone) {
