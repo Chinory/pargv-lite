@@ -14,9 +14,9 @@ $ npm i pargv-lite
 
 ```javascript
 let opts = {}, path = "", model = {
-  bool: { set: ["-b", "--bool"], reset: ["-B", "--nega"], def: false },
-  str: { set: ["--str"], reset: ["--reset"], def: "string" },
-  array: { set: ["--", "-a"], reset: ["--clear"], def: ["default"] },
+  bool: { set: ["-b", "--bool"], rst: ["-B", "--nega"], def: false },
+  str: { set: ["--str"], rst: ["--reset"], def: "string" },
+  array: { set: ["--", "-a"], rst: ["--clear"], def: ["default"] },
   module: { set: ["m", "-m", "--mod"], def: {
     x: { def: "1", set: ["x", "-x"] },
     y: { def: "2", set: ["y", "-y"] }
