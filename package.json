@@ -1,9 +1,8 @@
 {
   "name": "pargv-lite",
-  "version": "2.0.3",
-  "description": "Simple and reliable high performance command-line options parser.",
+  "version": "3.0.0",
+  "description": "JSON configurable command-line options parser",
   "main": "index.js",
-  "types": "index.d.ts",
   "author": "Chinory",
   "license": "MIT",
   "keywords": [
@@ -14,10 +13,8 @@
     "arguments",
     "cli-parser",
     "JSON",
-    "simple",
-    "reliable",
-    "performance",
-    "getopts"
+    "getopts",
+    "design"
   ],
   "repository": {
     "type": "git",
