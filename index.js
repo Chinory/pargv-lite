@@ -88,7 +88,7 @@ export default function parse(argv, i, req, res, err) {
 			else if (key = rst_[opt]) rst();
 			else if (key = exit_[opt]) { exit = key; break; }
 			else if (key = _key) if (_exit) { exit = key; break; } else set(s);
-			else if (ask('invalid option', s)) break;
+			else if (ask('invalid option')) break;
 		} else if (s[1] !== '-') { // -abc
 			const J = s.length - 1;
 			for (let j = 1; j < J; ++j) {
@@ -96,10 +96,10 @@ export default function parse(argv, i, req, res, err) {
 				opt = '-' + s[j];
 				if (key = set_[opt]) { if (noB()) { set(s.slice(j + 1)); continue I; } }
 				else if (key = rst_[opt]) rst();
-				else if (key = exit_[opt]) { if (ask('cannot exit inside an argument')) break I; }
+				else if (key = exit_[opt]) { if (ask('cannot exit within an argument')) break I; }
 				else if (ask('invalid option')) break I;
 			}
-			// -c ~ no universe, can exit
+			// -c ~ no universe
 			opt = '-' + s[J];
 			if (key = set_[opt]) { if (noB()) ext = opt; }
 			else if (key = rst_[opt]) rst();
@@ -125,8 +125,9 @@ export default function parse(argv, i, req, res, err) {
 			else if (key = rst_[opt]) t = 'reset';
 			else if (key = exit_[opt]) t = 'exit';
 			else if (ask('invalid option', v)) break; else continue;
-			if (ask(`Cannot assign a value to a ${t} option`, v)) break;
-		} else { opt = '--';
+			if (ask(`cannot assign value to ${t} option`, v)) break;
+		} else {
+			opt = '--';
 			if (key = _key) {
 				if (_exit) { exit = key; break; }
 				const a = res[key], l = argv.length; ++i;
@@ -134,9 +135,9 @@ export default function parse(argv, i, req, res, err) {
 				else if (i < l) res[key] = argv[(i = l) - 1];
 				break;
 			}
-			if (ask('unexpected argument')) break;
+			if (ask('anonymous argument are not allowed')) break;
 		}
 	}
-	if (ext) ask('This option requires an argument');
+	if (ext) ask('this option requires an argument');
 	return { i, exit };
 };
