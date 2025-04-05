@@ -51,9 +51,9 @@ export default function parse(argv, i, req, res, err) {
 			res[key] = !def;
 			return false;
 		 } return true;
-	}, k = o => o == null ? key : o, // split undefined? really?
+	}, k = o => o == null ? key : o, // split undefined? hmm ugly
 	ask = (msg, val) => err({msg, i, opt, key, val}),
-	exit = () => ({ i: i + 1, key, opt });
+	exit = c => ({ i: i + c, key, opt });
 	// prepare
 	/** @type {OptKeyMap} */
 	const set_ = {}, rst_ = {}, exit_ = {};
@@ -74,7 +74,7 @@ export default function parse(argv, i, req, res, err) {
 		const def = vk.def;
 		res[key] = isA(def) ? def.slice() : def;
 		for (const o of god(vk.set)) if (o!=='--') set_[k(o)] = key; else _key = key, _exit = false;
-		for (const o of god(vk.rst)) if (o!=='--') rst_[k(o)] = key;
+		for (const o of god(vk.rst)) if (o!=='--') rst_[k(o)] = key; // do not reset around
 	}
 	// process
 	let ext = false;
@@ -89,8 +89,8 @@ export default function parse(argv, i, req, res, err) {
 		if (s.length < 2 || s[0] !== '-') {
 			if (key = set_[opt = s]) ext = noB(); 
 			else if (key = rst_[opt]) rst();
-			else if (key = exit_[opt]) return exit();
-			else if (key = _key) if (_exit) return exit(); else set(s);
+			else if (key = exit_[opt]) return exit(1);
+			else if (key = _key) if (_exit) return exit(0); else set(s);
 			else if (ask('invalid option')) return i;
 			continue;
 		}
@@ -109,7 +109,7 @@ export default function parse(argv, i, req, res, err) {
 			opt = '-' + s[J];
 			if (key = set_[opt]) ext = noB();
 			else if (key = rst_[opt]) rst();
-			else if (key = exit_[opt]) return exit();
+			else if (key = exit_[opt]) return exit(1);
 			else if (ask('invalid option')) return i;
 			continue;
 		}
@@ -120,7 +120,7 @@ export default function parse(argv, i, req, res, err) {
 				// --opt ...
 				if (key = set_[opt = s]) ext = noB();
 				else if (key = rst_[opt]) rst();
-				else if (key = exit_[opt]) return exit();
+				else if (key = exit_[opt]) return exit(1);
 				else if (ask('invalid option')) return i;
 				continue;
 			} 
@@ -139,7 +139,7 @@ export default function parse(argv, i, req, res, err) {
 		}
 		opt = '--';
 		if (key = _key) {
-			if (_exit) return exit();
+			if (_exit) return exit(1);
 			const a = res[key], l = argv.length; ++i;
 			if (isA(a)) while (i < l) a.push(argv[i++]);
 			else if (i < l) res[key] = argv[(i = l) - 1];
