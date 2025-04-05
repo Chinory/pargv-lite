@@ -86,8 +86,8 @@ export default function parse(argv, i, req, res, err) {
 		if (s.length < 2 || s[0] !== '-') { // abc
 			if (key = set_[opt = s]) { if (noB()) ext = opt; } 
 			else if (key = rst_[opt]) rst();
-			else if (key = exit_[opt]) { exit = key; break; }
-			else if (key = _key) if (_exit) { exit = key; break; } else set(s);
+			else if (key = exit_[opt]) { ++i; exit = key; break; }
+			else if (key = _key) if (_exit) { ++i; exit = key; break; } else set(s);
 			else if (ask('invalid option')) break;
 		} else if (s[1] !== '-') { // -abc
 			const J = s.length - 1;
@@ -103,7 +103,7 @@ export default function parse(argv, i, req, res, err) {
 			opt = '-' + s[J];
 			if (key = set_[opt]) { if (noB()) ext = opt; }
 			else if (key = rst_[opt]) rst();
-			else if (key = exit_[opt]) { exit = key; break; }
+			else if (key = exit_[opt]) { ++i; exit = key; break; }
 			else if (ask('invalid option')) break;
 		} else if (s.length > 2) { // --opt
 			const k = s.indexOf('=');
@@ -111,7 +111,7 @@ export default function parse(argv, i, req, res, err) {
 				// --opt ...
 				if (key = set_[opt = s]) { if (noB()) ext = opt; }
 				else if (key = rst_[opt]) rst();
-				else if (key = exit_[opt]) { exit = key; break; }
+				else if (key = exit_[opt]) { ++i; exit = key; break; }
 				else if (ask('invalid option')) break;
 				continue;
 			} 
@@ -129,13 +129,13 @@ export default function parse(argv, i, req, res, err) {
 		} else {
 			opt = '--';
 			if (key = _key) {
-				if (_exit) { exit = key; break; }
+				if (_exit) { ++i; exit = key; break; }
 				const a = res[key], l = argv.length; ++i;
 				if (isA(a)) while (i < l) a.push(argv[i++]);
 				else if (i < l) res[key] = argv[(i = l) - 1];
 				break;
 			}
-			if (ask('anonymous argument are not allowed')) break;
+			if (ask('anonymous arguments are not allowed')) break;
 		}
 	}
 	if (ext) ask('this option requires an argument');
