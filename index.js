@@ -1,11 +1,10 @@
 'use strict';
-const isA = Array.isArray,
-	isB = x => typeof x === 'boolean';
+const isA = Array.isArray;
 /**
  * @typedef {string} VarKey Variable name
  * @typedef {string | boolean | string[]} VarVal Variable value
  * @typedef {string} OptStr Option string, e.g. '--', '-o', '--option'
- * @typedef {OptStr | null} OptDef Option definitions, e.g. '--', '-o', '--option', or `null` to refer to the variable name
+ * @typedef {OptStr | null} OptDef Option definitions, e.g. '--', '-o', '--option', or null to refer to the variable name
  * @typedef {OptDef | OptDef[]} OptKit one or more option definitions
  * 
  * @typedef {object} VarKit Variable configuration object
@@ -13,7 +12,7 @@ const isA = Array.isArray,
  * @property {OptKit} [set] Array of options to set the variable value
  * @property {OptKit} [rst] Array of options to reset the variable value
  * 
- * @typedef {OptKit} HaltKit Halt options, identical to `OptKit`, for now...
+ * @typedef {OptDef | OptDef[]} HaltKit Halt options, identical to `OptKit`, for now...
  * @typedef {{opt: OptStr, key: VarKey}} HaltRes
  * @typedef {Record<VarKey, VarKit | HaltKit>} KeyKitMap
  * @typedef {Record<VarKey, VarVal>} KeyValMap
@@ -23,6 +22,8 @@ const isA = Array.isArray,
  * @returns {boolean} Whether the parsing should continue (false) or quit (true)
  * @typedef {Record<OptStr, VarKey>} OptKeyMap internal type
  */
+/** @param {OptKit} ok */
+const god = ok => typeof ok === 'string' ? [ok] : isA(ok) ? ok : [];
 /**
  * Command line argument parser function
  * @param {string[]} argv Command line arguments array
@@ -42,15 +43,19 @@ export default function parse(argv, i, req, res, err) {
 	const hlt_ = {};
 	/** @type {OptStr} option */
 	let opt = '';
-	/** @type {OptStr | null} option of an extension */
-	let ext = null;
-	/** @type {VarKey | undefined} key (because of using object...) */
+	/** @type {OptStr} option of the extension */
+	let ext = '';
+	/** @type {VarKey | undefined} key */
 	let key;
-	/** @type {VarKey | undefined} key of anonymous variable */
-	let ann;
-	// methods
+	/** @type {VarKey | undefined} key to set the universe variable */
+	let suv;
+	/** @type {boolean} set universe variable to halt (?) */
+	let sun = false;
+	// methodsze
+	/** @param {string} msg @param {VarVal} [val] */
 	const ask = (msg, val) => err({msg, i, opt, key, val});
-	// assert(key != null)
+	// below: assert(key != null)
+	/** @param {VarVal} val */
 	const set = val => {
 		const cur = res[key];
 		if (isA(cur)) cur.push(val); else res[key] = val;
@@ -61,136 +66,109 @@ export default function parse(argv, i, req, res, err) {
 	};
 	const noB = () => {
 		const def = req[key].def;
-		if (isB(def)) res[key] = !def; else return true;
+		if (typeof def === 'boolean') {
+			res[key] = !def;
+			return false;
+		 } return true;
+	};
+	/** @param {string} s */
+	const one = s => {
+		if (key = set_[opt = s]) {
+			if (noB()) ext = opt;
+		} else if (key = rst_[opt]) rst();
+		else return ask('invalid option');
+		return false;
 	};
 	// prepare
 	for (key in req) {
 		const vk = req[key];
-		H: {
-			/** @type {HaltKit} */
-			let hk; 
-			if (vk == null) hk = [key];
-			else if (isA(vk)) hk = vk; 
-			else if (typeof vk === 'object') break H;
-			else hk = [vk];
-			for (const od of hk)
-				if (od!=='--') hlt_[od||key] = key;
-			continue;
-		}
-		let ok = vk.set;
+		H: { let hk; 
+			switch (typeof vk) {
+				case 'object':
+					if (vk == null) hk = [key];
+					else if (isA(vk)) hk = vk; 
+					else break H; break;
+				case 'string': hk = [vk]; break;
+				default: continue; }
+			for (const o of hk) if (o!=='--') hlt_[o||key] = key; else suv = key, sun = true; // lol
+			continue; }
 		const def = vk.def;
-		if (isA(def)) {
-			res[key] = def.slice();
-			if (ok !== undefined)
-				for (const od of isA(ok)?ok:[ok])
-					if (od!=='--') set_[od||key] = key; else ann = key;
-		} else {
-			res[key] = def;
-			if (ok !== undefined)
-				for (const od of isA(ok)?ok:[ok])
-					if (od!=='--') set_[od||key] = key; // no stomach
-		}
-		if ((ok = vk.rst) !== undefined)
-			for (const od of isA(ok)?ok:[ok]) 
-				if (od!=='--') rst_[od||key] = key;
+		res[key] = isA(def) ? def.slice() : def; // just rst() with known `def`
+		for (const o of god(vk.set)) if (o!=='--') set_[o||key] = key; else suv = key, sun = false;
+		for (const o of god(vk.rst)) if (o!=='--') rst_[o||key] = key; // ?? wanna reset around?
 	}
 	// process
 	/** @type {HaltRes} */
 	let halt = null;
 	I: for (; i < argv.length; ++i) {
 		const s = argv[i];
-		// extension ~ Just bite one more thing
-		if (ext != null) { // fact(const val = s)
-			ext = null; // assert(opt === ext)
-			if (key != null) { // assert(key === set_[opt])
+		// extension ~ Just one more thing
+		if (ext) { // fact(const val = s)
+			ext = ''; // assert(opt === ext)
+			if (key) { // assert(key === set_[opt])
 				set(s);
-				continue I;
-			} else {
-				if (ask('invalid option', s)) break I;
+				continue;
 			}
+			if (ask('invalid option', s)) break;
 		}
-		// halt ~ It should be this simple, right?
-		if (key = hlt_[s]) {
-			opt = s;
-			halt = {opt, key};
-			break I;
-		}
-		// ordinary ~ No more dashes!
+		// halt ~ Basic so that `i` is usable for resuming parsing
+		if (key = hlt_[opt = s]) { ++i; halt = {opt, key}; break; }
+		// abc
 		if (s.length < 2 || s[0] !== '-') {
-			opt = s;
-			if (key = set_[opt]) {
+			if (key = set_[opt = s]) {
 				if (noB()) ext = opt;
-			} else if (key = rst_[opt]) {
-				rst();
-			} else if (ann) {
-				res[ann].push(opt);
-			} else {
-				if (ask('invalid option')) break I;
-			}
-			continue I;
+			} else if (key = rst_[opt]) rst();
+			else if (key = suv) if (sun) { ++i; halt = {opt, key}; break; } else set(s);
+			else if (ask('invalid option', s)) break;
+			continue;
 		}
-		// ultimate ~ Eat you all nom nom
-		if (s === '--') {
-			opt = s;
-			if (key = ann) { 
-				const val = res[key];  // assert(isA(val))
-				for (++i; i < argv.length; ++i) val.push(argv[i]);
-				break I;
-			} else {
-				if (ask('unexpected argument')) break I;
+		// -abc
+		if (s[1] !== '-') {
+			// -ab ~ no extension
+			const J = s.length - 1;
+			for (let j = 1; j < J; ++j) {
+				opt = '-' + s[j];
+				if (key = set_[opt]) {
+					if (noB()) {
+						set(s.slice(j + 1));
+						continue I;
+					}
+				} else if (key = rst_[opt]) rst();
+				else if (ask('invalid option')) break I;
 			}
-			continue I;
-		}
-		// --opt?val
-		if (s[1] === '-') {
-			const j = s.indexOf('=');
-			// --opt val ~ Make extension
-			if (j < 0) { 
-				opt = s;
-				key = set_[opt]; // for the assertion
-				ext = opt;
-				continue I;
-			}
-			// --opt=val ~ Explicit assignment
-			opt = s.slice(0, j);
-			if (key = set_[opt]) {
-				const val = s.slice(j + 1);
-				if (isB(res[key])) {
-					if (ask('Cannot assign a value to a boolean-type option', val)) break I;
-				} else {
-					set(val);
-				}
-			} else if (key = rst_[opt]) {
-				if (ask('Cannot assign a value to a reset-type option')) break I;
-			} else {
-				if (ask('invalid option')) break I;
-			}
-			continue I;
+			// -c ~ not universe
+			if (one('-' + s[J])) break;
+			continue;
 		} 
-		// ab in -abc123 ~ Cannot make extension
-		const J = s.length - 1;
-		for (let j = 1; j < J; ++j) {
-			opt = '-' + s[j];
+		// --abc
+		if (s.length > 2) {
+			const k = s.indexOf('=');
+			// --opt ~ not universe
+			if (k < 0) if (one(s)) break; else continue;
+			// --opt=val ~ explicit assignment
+			opt = s.slice(0, k);
+			const val = s.slice(k + 1);
 			if (key = set_[opt]) {
-				if (noB()) {
-					set(s.slice(j + 1));
-					continue I;
-				}
+				if (typeof res[key] === 'boolean') {
+					if (ask('Cannot assign a value to a boolean-type option', val)) break;
+				} else set(val);
 			} else if (key = rst_[opt]) {
-				rst();
+				if (ask('Cannot assign a value to a reset-type option', val)) break;
 			} else {
-				if (ask('invalid option')) break I;
+				if (ask('invalid option', val)) break;
 			}
+			continue;
+		} 
+		// -- ~ collect all
+		opt = '--';
+		if (key = suv) { ++i;
+			if (sun) { halt = {opt, key}; break; }
+			const cur = res[key], len = argv.length;
+			if (isA(cur)) while (i < len) cur.push(argv[i++]);
+			else if (i < len) res[key] = argv[(i = len) - 1];
+			break;
 		}
-		// c in -abc123 ~ You can't be annonymous
-		opt = '-' + s[J];
-		if (key = set_[opt]) {
-			if (noB()) ext = opt;
-		} else if (key = rst_[opt]) {
-			rst();
-		} else {
-			if (ask('invalid option')) break I;
-		}
+		if (ask('unexpected argument')) break;
 	}
 	if (ext) ask('This option requires an argument'); // assertion same as above
 	return {i, halt};
