@@ -1,27 +1,34 @@
 {
   "name": "pargv-lite",
-  "version": "3.2.0-alpha.0",
-  "description": "JSON configurable command-line options parser",
+  "version": "3.2.0-beta",
+  "description": "A lightning-fast, single-pass command line argument parser with structure validation",
   "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "test": "node test.js",
+    "example": "node examples/cli-tool.js"
+  },
+  "keywords": [
+    "cli",
+    "args",
+    "argv",
+    "arguments",
+    "parser",
+    "command-line",
+    "option",
+    "flags"
+  ],
   "author": "Chinory",
   "license": "MIT",
-  "keywords": [
-    "parse",
-    "argv",
-    "cli",
-    "options",
-    "arguments",
-    "cli-parser",
-    "JSON",
-    "getopts",
-    "design"
-  ],
+  "engines": {
+    "node": ">=12.0.0"
+  },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/chinory/pargv-lite.git"
+    "url": "git+https://github.com/Chinory/pargv-lite.git"
   },
   "bugs": {
-    "url": "https://github.com/chinory/pargv-lite/issues"
+    "url": "https://github.com/Chinory/pargv-lite/issues"
   },
-  "homepage": "https://github.com/chinory/pargv-lite#readme"
+  "homepage": "https://github.com/Chinory/pargv-lite#readme"
 }
