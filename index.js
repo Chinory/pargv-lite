@@ -21,8 +21,8 @@ const isA = Array.isArray;
  * @returns {boolean} Whether the parsing should continue (false) or quit (true)
  * @typedef {Record<OptStr, VarKey>} OptKeyMap internal type
  */
-/** @param {OptKit} ok */
-const god = ok => typeof ok === 'string' ? [ok] : isA(ok) ? ok : [];
+/** Get OD! @param {OptKit} ok */
+const god = ok => ok === undefined ? [] : isA(ok) ? ok : [ok];
 /**
  * Command line argument parser function
  * @param {string[]} argv Command line arguments array, e.g. `process.argv`
@@ -51,8 +51,9 @@ export default function parse(argv, i, req, res, err) {
 			res[key] = !def;
 			return false;
 		 } return true;
-	}, exit = () => ({ i: i + 1, key, opt }),
-	ask = (msg, val) => err({msg, i, opt, key, val});
+	}, k = o => o == null ? key : o, // split undefined? really?
+	ask = (msg, val) => err({msg, i, opt, key, val}),
+	exit = () => ({ i: i + 1, key, opt });
 	// prepare
 	/** @type {OptKeyMap} */
 	const set_ = {}, rst_ = {}, exit_ = {};
@@ -63,17 +64,17 @@ export default function parse(argv, i, req, res, err) {
 		X: { let xk; // stricter than god()
 			switch (typeof vk) {
 				case 'object':
-					if (vk === null) xk = [key];
+					if (vk === null) xk = [vk];
 					else if (isA(vk)) xk = vk; 
 					else break X; break;
 				case 'string': xk = [vk]; break;
 				default: continue; }
-			for (const o of xk) if (o!=='--') exit_[o||key] = key; else _key = key, _exit = true;
+			for (const o of xk) if (o!=='--') exit_[k(o)] = key; else _key = key, _exit = true;
 			continue; }
 		const def = vk.def;
 		res[key] = isA(def) ? def.slice() : def;
-		for (const o of god(vk.set)) if (o!=='--') set_[o||key] = key; else _key = key, _exit = false;
-		for (const o of god(vk.rst)) if (o!=='--') rst_[o||key] = key;
+		for (const o of god(vk.set)) if (o!=='--') set_[k(o)] = key; else _key = key, _exit = false;
+		for (const o of god(vk.rst)) if (o!=='--') rst_[k(o)] = key;
 	}
 	// process
 	let ext = false;
@@ -114,8 +115,8 @@ export default function parse(argv, i, req, res, err) {
 		}
 		// --opt
 		if (s.length > 2) {
-			const k = s.indexOf('=');
-			if (k < 0) {
+			const J = s.indexOf('=');
+			if (J < 0) {
 				// --opt ...
 				if (key = set_[opt = s]) ext = noB();
 				else if (key = rst_[opt]) rst();
@@ -124,8 +125,8 @@ export default function parse(argv, i, req, res, err) {
 				continue;
 			} 
 			// --opt=val
-			let t; opt = s.slice(0, k);
-			const v = s.slice(k + 1);
+			let t; opt = s.slice(0, J);
+			const v = s.slice(J + 1);
 			if (key = set_[opt])
 				switch (t = typeof res[key]) {
 					case 'boolean': break;

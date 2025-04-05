@@ -216,17 +216,65 @@ runTest('Default naming', () => {
   assert.strictEqual(ret1.key, 'help');
   assert.strictEqual(ret1.opt, 'help');
   
-  // Test using null in array for direct naming
+  // Test using null for direct naming
   const req2 = {
     verbose: {
       def: false,
-      set: [null] // null in the array means use 'verbose' as option name
+      set: null // null means use 'verbose' as option name
     }
-  };
-  
-  const res2 = {};
+  }, res2 = {};
   parse(['node', 'script.js', 'verbose'], 2, req2, res2, errorHandler);
   assert.strictEqual(res2.verbose, true);
+
+  // Test using null in array for direct naming
+  const req3 = {
+    verbose: {
+      def: false,
+      set: [null] // null means use 'verbose' as option name
+    }
+  }, res3 = {};
+  parse(['node', 'script.js', 'verbose'], 2, req3, res3, errorHandler);
+  assert.strictEqual(res3.verbose, true);  
+
+  const req3a = {
+    verbose: {
+      def: false,
+      set: [null, '-v'] 
+    }
+  }, res3a = {};
+  parse(['node', 'script.js', '-v'], 2, req3a, res3a, errorHandler);
+  assert.strictEqual(res3a.verbose, true);  
+
+  // Test using '' for direct naming
+  const req4 = {
+    verbose: {
+      def: false,
+      set: '' // '' doesn't mean use 'verbose' as option name
+    }
+  }, res4 = {};
+  parse(['node', 'script.js', ''], 2, req4, res4, errorHandler);
+  assert.strictEqual(res4.verbose, true);
+
+  // Test using '' in array for direct naming
+  const req5 = {
+    verbose: {
+      def: false,
+      set: [''] // '' doesn't mean use 'verbose' as option name
+    }
+  }, res5 = {};
+  parse(['node', 'script.js', ''], 2, req5, res5, errorHandler);
+  assert.strictEqual(res5.verbose, true);  
+
+  const req5a = {
+    verbose: {
+      def: false,
+      set: ['', '-v'] 
+    }
+  }, res5a = {};
+  parse(['node', 'script.js', '-v'], 2, req5a, res5a, errorHandler);
+  assert.strictEqual(res5a.verbose, true);  
+
+
 });
 
 // TEST 9: Error handling

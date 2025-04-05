@@ -112,7 +112,7 @@ parse(argv, i, req, res, err)
 ```
 
 - **argv**: Array of command line arguments (usually `process.argv`)
-- **i**: Starting index for parsing (usually 2)
+- **i**: Starting index for parsing (usually `2`)
 - **req**: Configuration object defining your command structure
 - **res**: Object that will be populated with parsed results
 - **err**: Error handler function, receives `{msg, i, opt, key, val}` and returns boolean
@@ -142,10 +142,12 @@ The function returns either:
 }
 ```
 
-Option definitions can be:
-- A string: `'--option'`
-- An array of strings: `['--option', '-o']`
-- Include `null` in an array to use the variable name as an option: `[null, '-o']`
+Option definitions can be:  
+- A string: `'--option'`  
+- An array: `['--option', '-o']`  
+- `null` (refers to the variable name)  
+
+Note: `undefined` is not supported. While it may work like `null` in `OptKit`, this is unintended. At `ExitKit`, `undefined` behaves differently from `null`.  
 
 ## ⚡ Powerful Features
 
@@ -178,8 +180,7 @@ files: {
   set: ['-i', '--input'] // -i 1.txt --input 2.txt -i3.txt --input=4.txt
 }
 
-// '--' automatically collects all the anonymous arguments. 
-// If you write it out, it collects all the rest arguments.
+// Special option '--' collects all the anonymous arguments. 
 allFiles: {
   def: [],
   set: ['--', '-i'] // -i 1.txt 2.txt -- --this-will-be-collected-too
@@ -211,12 +212,11 @@ files: {
 }
 ```
 
-Note: Inverting a boolean value is not supported now. 
+Note: Inverting a boolean value is not supported. 
 
 ### Combined Short Options
 
 ```javascript
-// -abc is equivalent to -a -b -c
 const res = {};
 parse(['node', 'app.js', '-abc'], 2, {
   a: { def: false, set: '-a' },
@@ -224,6 +224,16 @@ parse(['node', 'app.js', '-abc'], 2, {
   c: { def: false, set: '-c' }
 }, res, errorHandler);
 // res = { a: true, b: true, c: true }
+```
+```javascript
+const res = {};
+parse(['node', 'app.js', '-abcd'], 2, {
+  a: { def: false, set: '-a' },
+  b: { def: [], set: '-b' },
+  c: { def: false, set: '-c' },
+  d: { def: false, set: '-d' }
+}, res, errorHandler);
+// { a: true, b: [ 'cd' ], c: false, d: false }
 ```
 
 ## 🔄 Subcommand Handling
