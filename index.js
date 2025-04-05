@@ -30,7 +30,7 @@ const god = ok => typeof ok === 'string' ? [ok] : isA(ok) ? ok : [];
  * @param {KeyKitMap} req Options structure definition
  * @param {KeyValMap} res Object to store parsed results
  * @param {IsFatal} err Error handler function, return true to quit parsing
- * @returns {{ i: number, opt: OptStr, key?: VarKey, exit: boolean }}
+ * @returns {{ i: number, exit?: VarKey }}
  * @example
  */
 export default function parse(argv, i, req, res, err) {
@@ -75,7 +75,7 @@ export default function parse(argv, i, req, res, err) {
 		for (const o of god(vk.rst)) if (o!=='--') rst_[o||key] = key;
 	}
 	// process
-	let ext = '', exit = '';
+	let ext = '', exit;
 	I: for (; i < argv.length; ++i) {
 		const s = argv[i];
 		// extension ~ ASSERT key = set_[opt = ext]
