@@ -1,22 +1,21 @@
 {
   "name": "pargv-lite",
-  "version": "3.3.0-beta",
+  "version": "3.3.1",
   "description": "A lightning-fast, single-pass command line argument parser with structure validation",
   "main": "index.js",
   "type": "module",
-  "scripts": {
-    "test": "node test.js",
-    "example": "node examples/cli-tool.js"
-  },
   "keywords": [
     "cli",
     "args",
     "argv",
-    "arguments",
+    "JSON",
     "parser",
     "command-line",
+    "arguments",
     "option",
-    "flags"
+    "flags",
+    "elegant",
+    "trigram"
   ],
   "author": "Chinory",
   "license": "MIT",

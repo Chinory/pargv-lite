@@ -31,7 +31,6 @@ const god = ok => ok === undefined ? [] : isA(ok) ? ok : [ok];
  * @param {KeyValMap} res Object to store parsed results
  * @param {IsFatal} err Error handler function, return true to quit parsing
  * @returns {number | { avi: number, key: KeyStr, opt: OptStr }} `ret` is object when an exit option applied, or just `avi`
- * @example
  */
 export default function parse(argv, i, req, res, err) {
 	/** @type {OptStr} option */
@@ -51,7 +50,7 @@ export default function parse(argv, i, req, res, err) {
 			res[key] = !def;
 			return false;
 		 } return true;
-	}, k = o => o == null ? key : o, // undefined is ok?
+	}, k = o => o == null ? key : o, // undefined is... well
 	ask = (msg, val) => err({msg, avi: i, opt, key, val}),
 	exit = c => ({ avi: i+c, key, opt });
 	// prepare

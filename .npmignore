@@ -1,7 +1,13 @@
 .gitignore
 .npmignore
+doc
+.vscode
+.DS_Store
+
 LICENSE
+README.md
+
 examples
 test.js
+
 poke.js
-README.md
