@@ -58,7 +58,7 @@ function main() {
   const gitRes = {};
   
   // First parse to handle global options and identify subcommand
-  const ret = parse(process.argv, 2, gitReq, gitRes, console.log);
+  const ret = parse(process.argv, 2, gitReq, gitRes, console.error);
   
   // Handle help flag
   if (gitRes.help) {
@@ -73,16 +73,16 @@ function main() {
     // - ret.key is the variable name in gitReq that triggered the exit ('command')
     // - ret.opt is the option string that triggered the exit (subcommand name)
     
-    console.log(`Executing ${ret.opt} command...`);
+    console.error(`Executing ${ret.opt} command...`);
     
     switch (ret.opt) {
       case 'commit':
         // Parse commit-specific options starting from ret.i
         const commitRes = {};
-        parse(process.argv, ret.i, commitReq, commitRes, console.log);
+        parse(process.argv, ret.i, commitReq, commitRes, console.error);
         
         // Use the results
-        console.log(
+        console.error(
           `Committing with message: ${commitRes.message}`,
           commitRes.all ? '(all files)' : '',
           commitRes.amend ? '(amending)' : ''
@@ -214,7 +214,7 @@ parse(['node', 'app.js', '-abc'], 2, {
   a: { def: false, set: '-a' },
   b: { def: false, set: '-b' },
   c: { def: false, set: '-c' }
-}, res, console.log);
+}, res, console.error);
 // res = { a: true, b: true, c: true }
 ```
 ```javascript
@@ -224,7 +224,7 @@ parse(['node', 'app.js', '-abcd'], 2, {
   b: { def: [], set: '-b' },
   c: { def: false, set: '-c' },
   d: { def: false, set: '-d' }
-}, res, console.log);
+}, res, console.error);
 // { a: true, b: [ 'cd' ], c: false, d: false }
 ```
 
@@ -244,7 +244,7 @@ const mainReq = {
 };
 
 const mainRes = {};
-const ret = parse(process.argv, 2, mainReq, mainRes, console.log);
+const ret = parse(process.argv, 2, mainReq, mainRes, console.error);
 
 if (typeof ret === 'object') {
   // When a command is found via the exit mechanism:
@@ -256,7 +256,7 @@ if (typeof ret === 'object') {
     case 'build':
       const buildReq = { /* build options */ };
       const buildRes = {};
-      parse(process.argv, ret.i, buildReq, buildRes, console.log);
+      parse(process.argv, ret.i, buildReq, buildRes, console.error);
       break;
   }
 }

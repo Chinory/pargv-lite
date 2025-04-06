@@ -1,7 +1,10 @@
 'use strict';
 import parse from './index.js';
 
-const $ = console.log, e = a => $('💥', a), hr = '-'.repeat(42); $(hr);
+const $ = console.log, 
+  e = a => console.error('💥', a), 
+  hr = '-'.repeat(42);
+$(hr);
 
 const poke = (title, argv, req) => {
   $('🤓', title);
