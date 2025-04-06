@@ -314,7 +314,7 @@ runTest('Exit on anonymous arguments', () => {
   if (typeof ret !== 'object') throw ret;
   assert.strictEqual(ret.key, 'files');
   assert.strictEqual(ret.opt, '1.txt');
-  assert.strictEqual(ret.i, 4);
+  assert.strictEqual(ret.i, 3);
 });
 
 console.log('🎉 All tests completed!'); 

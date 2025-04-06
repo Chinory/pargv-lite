@@ -58,7 +58,7 @@ function main() {
   const gitRes = {};
   
   // First parse to handle global options and identify subcommand
-  const ret = parse(process.argv, 2, gitReq, gitRes, errorHandler);
+  const ret = parse(process.argv, 2, gitReq, gitRes, console.log);
   
   // Handle help flag
   if (gitRes.help) {
@@ -79,7 +79,7 @@ function main() {
       case 'commit':
         // Parse commit-specific options starting from ret.i
         const commitRes = {};
-        parse(process.argv, ret.i, commitReq, commitRes, errorHandler);
+        parse(process.argv, ret.i, commitReq, commitRes, console.log);
         
         // Use the results
         console.log(
@@ -96,12 +96,6 @@ function main() {
       // Handle other commands...
     }
   }
-}
-
-// Error handler
-function errorHandler(err) {
-  console.error(`Error at arg ${err.i}: ${err.msg}`);
-  return false; // Continue parsing
 }
 ```
 
@@ -132,7 +126,7 @@ The function returns either:
 {
   // Regular variable with default value and option definitions
   variableName: {
-    def: defaultValue,    // Required: Boolean, string, or string[]
+    def: defaultValue,     // Boolean, string, or string[]
     set: optionDefinition, // Options that set this variable
     rst: optionDefinition  // Options that reset this variable to default
   },
@@ -145,9 +139,7 @@ The function returns either:
 Option definitions can be:  
 - A string: `'--option'`  
 - An array: `['--option', '-o']`  
-- `null` (refers to the variable name)  
-
-Note: `undefined` is not supported. While it may work like `null` in `OptKit`, this is unintended. At `ExitKit`, `undefined` behaves differently from `null`.  
+- `null` refers to the variable name. `[null, ...]` is also supported.
 
 ## ⚡ Powerful Features
 
@@ -222,7 +214,7 @@ parse(['node', 'app.js', '-abc'], 2, {
   a: { def: false, set: '-a' },
   b: { def: false, set: '-b' },
   c: { def: false, set: '-c' }
-}, res, errorHandler);
+}, res, console.log);
 // res = { a: true, b: true, c: true }
 ```
 ```javascript
@@ -232,7 +224,7 @@ parse(['node', 'app.js', '-abcd'], 2, {
   b: { def: [], set: '-b' },
   c: { def: false, set: '-c' },
   d: { def: false, set: '-d' }
-}, res, errorHandler);
+}, res, console.log);
 // { a: true, b: [ 'cd' ], c: false, d: false }
 ```
 
@@ -252,7 +244,7 @@ const mainReq = {
 };
 
 const mainRes = {};
-const ret = parse(process.argv, 2, mainReq, mainRes, errorHandler);
+const ret = parse(process.argv, 2, mainReq, mainRes, console.log);
 
 if (typeof ret === 'object') {
   // When a command is found via the exit mechanism:
@@ -264,7 +256,7 @@ if (typeof ret === 'object') {
     case 'build':
       const buildReq = { /* build options */ };
       const buildRes = {};
-      parse(process.argv, ret.i, buildReq, buildRes, errorHandler);
+      parse(process.argv, ret.i, buildReq, buildRes, console.log);
       break;
   }
 }

@@ -1,6 +1,6 @@
 {
   "name": "pargv-lite",
-  "version": "3.2.2-beta",
+  "version": "3.2.3-beta",
   "description": "A lightning-fast, single-pass command line argument parser with structure validation",
   "main": "index.js",
   "type": "module",

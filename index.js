@@ -1,25 +1,25 @@
 'use strict';
 const isA = Array.isArray;
 /**
- * @typedef {string} VarKey Variable name
+ * @typedef {string} KeyStr Variable name
  * @typedef {string | boolean | string[]} VarVal Variable value
  * @typedef {string} OptStr Option string, e.g. '--', '-o', '--option'
  * @typedef {OptStr | null} OptDef Option definitions, e.g. '--', '-o', '--option', or null to refer to the variable name
  * @typedef {OptDef | OptDef[]} OptKit one or more option definitions
  * 
  * @typedef {object} VarKit Variable configuration object
- * @property {VarVal} def Variable **def**inition & **def**ault value (pun intended)
+ * @property {VarVal} [def] Variable **def**inition & **def**ault value (pun intended)
  * @property {OptKit} [set] Array of options to set the variable value
  * @property {OptKit} [rst] Array of options to reset the variable value
  * 
  * @typedef {OptDef | OptDef[]} ExitKit Exit options, identical to `OptKit` for now
- * @typedef {Record<VarKey, VarKit | ExitKit>} KeyKitMap
- * @typedef {Record<VarKey, VarVal>} KeyValMap
+ * @typedef {Record<KeyStr, VarKit | ExitKit>} KeyKitMap
+ * @typedef {Record<KeyStr, VarVal>} KeyValMap
  * 
  * @callback IsFatal
- * @param {{msg: string, i: number, opt: OptStr, key?: VarKey, val?: VarVal }} err
+ * @param {{msg: string, i: number, opt: OptStr, key?: KeyStr, val?: VarVal }} err
  * @returns {boolean} Whether the parsing should continue (false) or quit (true)
- * @typedef {Record<OptStr, VarKey>} OptKeyMap internal type
+ * @typedef {Record<OptStr, KeyStr>} OptKeyMap internal type
  */
 /** Get OD! @param {OptKit} ok */
 const god = ok => ok === undefined ? [] : isA(ok) ? ok : [ok];
@@ -30,13 +30,13 @@ const god = ok => ok === undefined ? [] : isA(ok) ? ok : [ok];
  * @param {KeyKitMap} req Options structure definition
  * @param {KeyValMap} res Object to store parsed results
  * @param {IsFatal} err Error handler function, return true to quit parsing
- * @returns {number | { i: number, key: VarKey, opt: OptStr }}
+ * @returns {number | { i: number, key: KeyStr, opt: OptStr }}
  * @example
  */
 export default function parse(argv, i, req, res, err) {
 	/** @type {OptStr} option */
 	let opt = '';
-	/** @type {VarKey | undefined} key */
+	/** @type {KeyStr | undefined} key */
 	let key;
 	/** @param {VarVal} val */
 	const set = val => {
@@ -51,30 +51,32 @@ export default function parse(argv, i, req, res, err) {
 			res[key] = !def;
 			return false;
 		 } return true;
-	}, k = o => o == null ? key : o, // split undefined? hmm ugly
+	}, k = o => o == null ? key : o,
 	ask = (msg, val) => err({msg, i, opt, key, val}),
 	exit = c => ({ i: i + c, key, opt });
 	// prepare
 	/** @type {OptKeyMap} */
 	const set_ = {}, rst_ = {}, exit_ = {};
-	/** @type {VarKey | undefined} */
+	/** @type {KeyStr | undefined} */
 	let _key, _exit = false;
 	for (key in req) {
 		const vk = req[key];
-		X: { let xk; // stricter than god()
+		X: { let xk;
 			switch (typeof vk) {
 				case 'object':
 					if (vk === null) xk = [vk];
 					else if (isA(vk)) xk = vk; 
 					else break X; break;
-				case 'string': xk = [vk]; break;
-				default: continue; }
-			for (const o of xk) if (o!=='--') exit_[k(o)] = key; else _key = key, _exit = true;
+				case 'undefined': continue;
+				default: xk = [vk]; }
+			for (let o of xk) if ((o=k(o))!=='--') exit_[o] = key;
+				else _key = key, _exit = true;
 			continue; }
-		const def = vk.def;
+		const def = vk.def; // if (def === undefined) continue;
 		res[key] = isA(def) ? def.slice() : def;
-		for (const o of god(vk.set)) if (o!=='--') set_[k(o)] = key; else _key = key, _exit = false;
-		for (const o of god(vk.rst)) if (o!=='--') rst_[k(o)] = key; // do not reset around
+		for (let o of god(vk.set)) if ((o=k(o))!=='--') set_[o] = key;
+			else if (typeof def !== 'boolean') _key = key, _exit = false;
+		for (let o of god(vk.rst)) if ((o=k(o))!=='--') rst_[o] = key;
 	}
 	// process
 	let ext = false;
@@ -133,7 +135,8 @@ export default function parse(argv, i, req, res, err) {
 					default: set(v); continue; }
 			else if (key = rst_[opt]) t = 'reset';
 			else if (key = exit_[opt]) t = 'exit';
-			else if (ask('invalid option', v)) return i; else continue;
+			else if (ask('invalid option', v)) return i;
+			else continue;
 			if (ask(`cannot assign value to ${t} option`, v)) return i;
 			continue;
 		}
