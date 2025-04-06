@@ -51,7 +51,7 @@ export default function parse(argv, i, req, res, err) {
 			res[key] = !def;
 			return false;
 		 } return true;
-	}, k = o => o == null ? key : o,
+	}, k = o => o == null ? key : o, // undefined is ok?
 	ask = (msg, val) => err({msg, i, opt, key, val}),
 	exit = c => ({ i: i + c, key, opt });
 	// prepare
