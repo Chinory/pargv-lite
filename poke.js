@@ -100,18 +100,18 @@ poke('cannot exit within an argument && default named exit option', ['-abcd'], {
 🔍 { a: { def: false, set: '-a' }, b: '-b', '-c': undefined, '-d': null }
 💥 {
   msg: 'cannot exit within an argument',
-  i: 0,
+  avi: 0,
   opt: '-b',
   key: 'b',
   val: undefined
 }
 💥 {
   msg: 'invalid option',
-  i: 0,
+  avi: 0,
   opt: '-c',
   key: undefined,
   val: undefined
 }
 🎁 { a: true }
-😇 { i: 1, key: '-d', opt: '-d' }
+😇 { avi: 1, key: '-d', opt: '-d' }
 */

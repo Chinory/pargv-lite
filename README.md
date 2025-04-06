@@ -68,8 +68,8 @@ function main() {
   
   // Check if a subcommand was encountered (returns object with next position)
   if (typeof ret === 'object') {
-    // ret contains { i, key, opt }:
-    // - ret.i is the index to continue parsing from (already incremented)
+    // ret contains { avi, key, opt }:
+    // - ret.avi is the argv index to continue parsing from
     // - ret.key is the variable name in gitReq that triggered the exit ('command')
     // - ret.opt is the option string that triggered the exit (subcommand name)
     
@@ -77,9 +77,9 @@ function main() {
     
     switch (ret.opt) {
       case 'commit':
-        // Parse commit-specific options starting from ret.i
+        // Parse commit-specific options starting from ret.avi
         const commitRes = {};
-        parse(process.argv, ret.i, commitReq, commitRes, console.error);
+        parse(process.argv, ret.avi, commitReq, commitRes, console.error);
         
         // Use the results
         console.error(
@@ -109,14 +109,14 @@ parse(argv, i, req, res, err)
 - **i**: Starting index for parsing (usually `2`)
 - **req**: Configuration object defining your command structure
 - **res**: Object that will be populated with parsed results
-- **err**: Error handler function, receives `{msg, i, opt, key, val}` and returns boolean
+- **err**: Error handler function, receives `{msg, avi, opt, key, val}` and returns boolean
 
 ### Return Value
 
 The function returns either:
 - A number (the next index after parsing completed normally)
-- An object `{ i, key, opt }` when exiting early due to an exit option, where:
-  - `i`: The next index to resume parsing from (already incremented past the exit option)
+- An object `{ avi, key, opt }` when exiting early due to an exit option, where:
+  - `avi`: The next index to resume parsing from (**A**rg**V** **I**ndex)
   - `key`: The variable name in the req object that triggered the exit
   - `opt`: The option string that triggered the exit (e.g., the subcommand name)
 
@@ -248,7 +248,7 @@ const ret = parse(process.argv, 2, mainReq, mainRes, console.error);
 
 if (typeof ret === 'object') {
   // When a command is found via the exit mechanism:
-  // - ret.i is already positioned after the subcommand
+  // - ret.avi is already positioned after the subcommand
   // - ret.key contains the variable name in req ('command' in this case)
   // - ret.opt contains the matched option (the subcommand name)
   
@@ -256,7 +256,7 @@ if (typeof ret === 'object') {
     case 'build':
       const buildReq = { /* build options */ };
       const buildRes = {};
-      parse(process.argv, ret.i, buildReq, buildRes, console.error);
+      parse(process.argv, ret.avi, buildReq, buildRes, console.error);
       break;
   }
 }
