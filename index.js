@@ -54,15 +54,20 @@ const isA = Array.isArray;
 /** Get OD! @param {OptKit} ok */
 const god = ok => ok === undefined ? [] : isA(ok) ? ok : [ok];
 export const defaults = {
-	/** `'--'` => Consume **all** the rest arguments */
-	dd_all: true, // modify the compile time behavior
-	/** `'-opt'` => `{ opt: '-opt' }` */
+	// WTF feature
+	/** dash sign @type {'-'} */
+	d: '-',
+	/** equal sign @type {'='} */
+	eq: '=',
+	/** `'-opt'` => `{ opt: '-opt' }` @type {false} */
 	d_opt: false,
-	/** `'-abc'` => `'-a', '-b', '-c'` */
+	/** `'-abc'` => `'-a', '-b', '-c'` @type {true} */
 	d_abc: true,
-	/** `'-oval'` => `{ opt: '-o', val: 'val' }` */
+	/** `'-oval'` => `{ opt: '-o', val: 'val' }` @type {true} */
 	d_o_val: true,
-	/** `'--opt=val'` => `{ opt: '--opt', val: 'val' }` */
+	/** `'--'` => Consume **all** the rest arguments @type {true} */  // modify the compile time behavior
+	dd_all: true, 
+	/** `'--opt=val'` => `{ opt: '--opt', val: 'val' }` @type {true} */
 	dd_opt_eq_val: true,
 };
 
@@ -75,7 +80,7 @@ export const defaults = {
  * @param {IsFatal} err Error handler function, return true to quit parsing
  * @returns {ExitVal?} `ret` provided when an Exit option applied `@type { avi: number, key: Key, opt: Option }`
  */
-export default function parse(argv, i, req, res, err, feature = defaults) {
+export default function parse(argv, i, req, res, err = console.error, cfg = defaults) {
 	/** @type {Option} */
 	let opt = '';
 	/** @type {Key}  */
@@ -140,7 +145,7 @@ export default function parse(argv, i, req, res, err, feature = defaults) {
 		}
 	};
 
-
+	// TODO: const d0 = {}, d1 = {}, d2 = {}
 	// prepare
 	/** @type {OptReg} */
 	const exit_ = {}, rst_ = {}, bk_ = {}, tk_ = {},
@@ -217,23 +222,26 @@ export default function parse(argv, i, req, res, err, feature = defaults) {
 		// -abc or -opt
 		if (s[1] !== '-') {
 			// -opt
-			if (feature.d_opt) {
+			if (cfg.d_opt) {
 				// WTF maybe support '-opt' ? wtf // maybe should record the max length of '-opt's
 			}
-			const J = s.length - 1;
+			const J = s.length - 1; // this can't be negative
 			// -abc
-			if (feature.d_abc) {
-				// -ab :: no extension, no anonymous, no exit
-				for (let j = 1; j < J; ++j) {
+
+			// -a :: yes new branch TODO TODO TODO
+
+			if (cfg.d_abc) {
+				// -b :: no extension, no anonymous, no exit
+				for (let j = 2; j < J; ++j) {
 					opt = '-' + s[j];
-					if (key = str_[opt]) { if (noB()) { set(s.slice(j + 1)); continue s; } } // d_o_val
+					if (key = str_[opt]) { if (noB()) { set(s.slice(j + 1)); continue s; } } // TODO feature.d_o_val
 					else if (key = rst_[opt]) rst();
 					else if (key = exit_[opt]) { if (ask('cannot exit within an argument')) return null; }
 					else if (ask('invalid option')) return null;
 				}
-			} else if (J !== 1) {
+			} else if (J > 1) {
 				// opt? key?
-				opt = s;
+				opt = s[2]; // check it
 				if (ask('invalid option')) return null;
 				continue;
 			}
@@ -248,9 +256,9 @@ export default function parse(argv, i, req, res, err, feature = defaults) {
 		// --opt
 		if (s.length > 2) {
 			// --opt=val
-			if (feature.dd_opt_eq_val) eq: { 
-				const J = s.indexOf('=');
-				if (J < 0) break eq;
+			if (cfg.dd_opt_eq_val) eq: { 
+				let J = s.indexOf('='); // TODO s.slice(2, maxOptLen).indexOf('=')
+				if (J < 0) break eq; // TODO else J += 2;
 				let t; opt = s.slice(0, J);
 				const v = s.slice(J + 1);
 				if (key = str_[opt])
