@@ -60,7 +60,7 @@ const god = ok => ok === undefined ? [] : isA(ok) ? ok : [ok];
  * @param {KeyKitMap} req Options structure definition
  * @param {KeyValMap} res Object to store parsed results
  * @param {IsFatal} err Error handler function, return true to quit parsing
- * @returns {number | { avi: number, key: Key, opt: Option }} `ret` is object when an exit option applied, or just `avi`
+ * @returns {number | { avi: number, key: Key, opt: Option }} `ret` is object when an exit option applied, or just `avi`. Maybe you don't need it to return a single `avi` because it seems always equal to `argv.length`
  */
 export default function parse(argv, i, req, res, err) {
 	/** @type {Option} */
