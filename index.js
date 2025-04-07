@@ -43,10 +43,10 @@ const isA = Array.isArray;
  * 
  * @typedef {Bool | Text | List} VarVal
  * @typedef {{ [key: Key]: VarVal }} VarValMap The `req` arg of `parse`.
- * @typedef {{ avi: number, key: Key, opt: Option }} ExitVal 
+ * @typedef {{ i: number, key: Key, opt: Option }} ExitVal 
  * 
  * @callback IsFatal
- * @param {{ msg: string, avi: number, opt: Option, key?: Key, val?: VarVal }} err
+ * @param {{ i: number, msg: string, opt: Option, key?: Key, val?: VarVal }} err
  * @returns {boolean} Whether the parsing should continue (false) or quit (true)
  * @typedef {(k: Key, v: VarVal) => void} Act
  * @typedef {{ [opt: Option]: { a: Act, k: Key } }} OptReg internal type
@@ -77,8 +77,8 @@ export const defaults = {
  * @param {number} i Index of current argument being processed, e.g. `2`
  * @param {KitMap} req Options structure definition
  * @param {VarValMap} res Object to store parsed results
- * @param {IsFatal} err Error handler function, return true to quit parsing
- * @returns {ExitVal?} `ret` provided when an Exit option applied `@type { avi: number, key: Key, opt: Option }`
+ * @param {IsFatal} err Error handler function, return `true` to quit parsing. It'a clean quit, no bad data in `res`
+ * @returns {ExitVal?} `ret` provided when an Exit option applied `@type { i: number, key: Key, opt: Option }`
  */
 export default function parse(argv, i, req, res, err = console.error, cfg = defaults) {
 	/** @type {Option} */
@@ -108,8 +108,8 @@ export default function parse(argv, i, req, res, err = console.error, cfg = defa
 
 
 	}, k = o => o === null ? key : o,
-	ask = (msg, val) => err({msg, avi: i, opt, key, val}),
-	exit = c => ({ avi: i+c, key, opt });
+	ask = (msg, val) => err({ i, msg, opt, key, val }),
+	exit = c => ({ i: i+c, key, opt });
 
 
 	const a_b1 = k => { res[k] = true; }
