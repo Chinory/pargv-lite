@@ -6,18 +6,30 @@ const isA = Array.isArray;
  * @typedef {Option | null} OptDef Option definition, e.g. '--', '-o', '--option' or `null` to refer to the variable name `Key`
  * @typedef {OptDef | OptDef[]} OptKit one or more option definitions, for a shortest expression
  * 
- * @typedef {string | number | bigint | symbol} Text can be shown as text
- * 
- * @typedef {object} TextKit
- * @property {Text | Text[]} [def] Variable **def**inition & **def**ault value (pun intended)
- * @property {OptKit} [str] Options to set `arg: string`
- * @property {OptKit} [num] Options to set `Number(arg)`. Call `err` with `NaN`
- * @property {OptKit} [int] Options to set `BigInt(arg)`. Call `err` when throw
- * @property {OptKit} [sym] Options to set `Symbol(arg)`.
+ * @typedef {object} VarKitBase abstract base class
+ * @property {VarVal | VarVal[]} [def] Variable **def**inition & **def**ault value (pun intended)
+ * @property {OptKit} [set] Options to set by referring the data type of `def`
  * @property {OptKit} [rst] Options to set `def`
  * 
- * @typedef {object} BoolKit
+ * @typedef {string | number} Text can be written as text IN JSON otherwise you can't configure default value in json but does it really matter? yes you do it's your project POSITIONING
+ * 
+ * @typedef {object} TextKit you have to use something. but if i say, when ext=0, it is just Bool..hmmmm BUT you can't name a zero size setter, it must be 'set', 'set_set', 'str_num', but not ''(???)
+ * @property {Text} [def] Variable **def**inition & **def**ault value (pun intended)
+ * @property {number} [ext] Deprecated(it's in setter name now) consume such number of arguments as extension at once. only available when def is an array. so we shall ban the -- for '' the ambiguous feature
+ * @property {OptKit} [set] Options to set by referring the data type of `def`
+ * @property {OptKit} [str] Options to set `arg: string` // which name is better?
+ * @property {OptKit} [num] Options to set `Number(arg)`. Call `err` with `NaN` // dute hmmm..,
+ * @property {OptKit} [int] Options to set `BigInt(arg)`. Call `err` when throw // but since not available in JSON ... and this name confilct with parseInt
+ * @property {OptKit} [sym] Options to set `Symbol(arg)`. // but since not available in JSON ... // omg it doesn't even available in most of other languages
+ * @property {OptKit} [rst] Options to set `def`. The short name is reasonable, so you don't match `reset` when you search `set`, it IS `rst`
+ * 
+ * @typedef {object} ListKit now you can put 'set', 'set_set', 'str_num', here. OR add another param to parse() to define how to initialize a var from raw string. YES! It's not my duty! Something like `{ num: v => { if (isNaN(v = Number(v)) throw 'not a number'; return v; } }`, ` { i64: v => { throw 'This is in JAVASCRIPT you Rust guy' } }`, ` { bigint: BigInt } // it throws`. AND throw directly if there's a mistake in `req` as it's a compile time error not a runtime one
+ * @property {Text[]} def
+ * @property {OptKit} [set] Options to set by referring the data type of `def` of the value in respective postion
+ * 
+ * @typedef {object} BoolKit only appearance matters don't give some extensions to it
  * @property {boolean?} def Variable **def**inition & **def**ault value (pun intended)
+ * @property {OptKit} [set] Options to set `!def`. Call `err` with `null`. Identical with `not`
  * @property {OptKit} [yes] Options to set `true`
  * @property {OptKit} [no]  Options to set `false`
  * @property {OptKit} [on]  Options to set `true`
@@ -26,11 +38,11 @@ const isA = Array.isArray;
  * @property {OptKit} [inv] Options to set `!cur`. Call `err` with `null`
  * @property {OptKit} [rst] Options to set `def`
  * 
- * @typedef {OptDef | OptDef[]} ExitKit
+ * @typedef {OptDef | OptDef[]} ExitKit there are only two types of container in JSON: list, dict. And this the list one
  * @typedef {TextKit | BoolKit} VarKit
  * @typedef {Record<Key, ExitKit | VarKit>} KeyKitMap The `req`. `ExitKit` has higher priority
  * @typedef {Text | boolean?} VarVal
- * @typedef {Record<Key, VarVal | VarVal[] | undefined>} KeyValMap The `res`. `undefined` is from `TextKit.def`
+ * @typedef {Record<Key, VarVal | VarVal[] | undefined>} KeyValMap The `res`. This `undefined` is from `TextKit.def`
  * 
  * @callback IsFatal
  * @param {{msg: string, avi: number, opt: Option, key?: Key, val?: VarVal }} err
@@ -159,7 +171,7 @@ export default function parse(argv, i, req, res, err) {
 		go(vk.sym, sym_);
 	}
 	// process
-	let ext = false;
+	let ext = false; // this can be a number, so that a multiple extension is naturally available but how do I configure it
 	s: for (; i < argv.length; ++i) {
 		const s = argv[i];
 		// extension :: ASSERT key===set_[opt]
