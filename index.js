@@ -6,29 +6,12 @@ const isA = Array.isArray;
  * @typedef {Option | null} OptDef Option definition, e.g. '--', '-o', '--option' or `null` to refer to the variable name `Key`
  * @typedef {OptDef | OptDef[]} OptKit one or more option definitions, for a shortest expression
  * 
- * @typedef {object} VarKitBase abstract base class
- * @property {VarVal | VarVal[]} [def] Variable **def**inition & **def**ault value (pun intended)
- * @property {OptKit} [set] Options to set by referring the data type of `def`
- * @property {OptKit} [rst] Options to set `def`
+ * @typedef {boolean | null} Bool actually `Optional<Boolean>`
+ * @typedef {string | number} Text Values that can be written as text IN JSON. it's the project POSITIONING
+ * @typedef {Text[]} List
  * 
- * @typedef {string | number} Text can be written as text IN JSON otherwise you can't configure default value in json but does it really matter? yes you do it's your project POSITIONING
- * 
- * @typedef {object} TextKit you have to use something. but if i say, when ext=0, it is just Bool..hmmmm BUT you can't name a zero size setter, it must be 'set', 'set_set', 'str_num', but not ''(???)
- * @property {Text} [def] Variable **def**inition & **def**ault value (pun intended)
- * @property {number} [ext] Deprecated(it's in setter name now) consume such number of arguments as extension at once. only available when def is an array. so we shall ban the -- for '' the ambiguous feature
- * @property {OptKit} [set] Options to set by referring the data type of `def`
- * @property {OptKit} [str] Options to set `arg: string` // which name is better?
- * @property {OptKit} [num] Options to set `Number(arg)`. Call `err` with `NaN` // dute hmmm..,
- * @property {OptKit} [int] Options to set `BigInt(arg)`. Call `err` when throw // but since not available in JSON ... and this name confilct with parseInt
- * @property {OptKit} [sym] Options to set `Symbol(arg)`. // but since not available in JSON ... // omg it doesn't even available in most of other languages
- * @property {OptKit} [rst] Options to set `def`. The short name is reasonable, so you don't match `reset` when you search `set`, it IS `rst`
- * 
- * @typedef {object} ListKit now you can put 'set', 'set_set', 'str_num', here. OR add another param to parse() to define how to initialize a var from raw string. YES! It's not my duty! Something like `{ num: v => { if (isNaN(v = Number(v)) throw 'not a number'; return v; } }`, ` { i64: v => { throw 'This is in JAVASCRIPT you Rust guy' } }`, ` { bigint: BigInt } // it throws`. AND throw directly if there's a mistake in `req` as it's a compile time error not a runtime one
- * @property {Text[]} def
- * @property {OptKit} [set] Options to set by referring the data type of `def` of the value in respective postion
- * 
- * @typedef {object} BoolKit only appearance matters don't give some extensions to it
- * @property {boolean?} def Variable **def**inition & **def**ault value (pun intended)
+ * @typedef {Object} BoolKit only appearance matters don't give some extensions to it
+ * @property {Bool} def Variable **def**inition & **def**ault value (pun intended)
  * @property {OptKit} [set] Options to set `!def`. Call `err` with `null`. Identical with `not`
  * @property {OptKit} [yes] Options to set `true`
  * @property {OptKit} [no]  Options to set `false`
@@ -38,17 +21,34 @@ const isA = Array.isArray;
  * @property {OptKit} [inv] Options to set `!cur`. Call `err` with `null`
  * @property {OptKit} [rst] Options to set `def`
  * 
+ * @typedef {Object} TextKit you have to use something. but if i say, when ext=0, it is just Bool..hmmmm BUT you can't name a zero size setter, it must be 'set', 'set_set', 'str_num', but not ''(???)
+ * @property {Text} def Variable **def**inition & **def**ault value (pun intended)
+ * property {number} [ext] Deprecated(it's in setter name now) consume such number of arguments as extension at once. only available when def is an array. so we shall ban the -- for '' the ambiguous feature
+ * @property {OptKit} [set] Options to set by referring the data type of `def`
+ * property {OptKit} [str] Options to set `arg: string` // which name is better?
+ * property {OptKit} [num] Options to set `Number(arg)`. Call `err` with `NaN` // dute hmmm..,
+ * property {OptKit} [int] Options to set `BigInt(arg)`. Call `err` when throw // but since not available in JSON ... and this name confilct with parseInt
+ * property {OptKit} [sym] Options to set `Symbol(arg)`. // but since not available in JSON ... // omg it doesn't even available in most of other languages
+ * @property {OptKit} [rst] Options to set `def`. The short name is reasonable, so you don't match `reset` when you search `set`, it IS `rst`
+ * 
+ * @typedef {Object} ListKit now you can put 'set', 'set_set', 'str_num', here. OR add another param to parse() to define how to initialize a var from raw string. YES! It's not my duty! Something like `{ num: v => { if (isNaN(v = Number(v)) throw 'not a number'; return v; } }`, ` { i64: v => { throw 'This is in JAVASCRIPT you Rust guy' } }`, ` { bigint: BigInt } // it throws`. AND throw directly if there's a mistake in `req` as it's a compile time error not a runtime one
+ * @property {List} def
+ * @property {OptKit} [set] Options to set by referring the data type of `def` of the value in respective postion
+ * @property {OptKit} [rst]
+ * 
  * @typedef {OptDef | OptDef[]} ExitKit there are only two types of container in JSON: list, dict. And this the list one
- * @typedef {TextKit | BoolKit} VarKit
- * @typedef {Record<Key, ExitKit | VarKit>} KeyKitMap The `req`. `ExitKit` has higher priority
- * @typedef {Text | boolean?} VarVal
- * @typedef {Record<Key, VarVal | VarVal[] | undefined>} KeyValMap The `res`. This `undefined` is from `TextKit.def`
+ * @typedef {BoolKit | TextKit | ListKit} VarKit
+ * @typedef {{ [key: Key]: ExitKit | VarKit }} KitMap The `req` arg of `parse`. `ExitKit` has higher priority (extension is even higher. '--' is highest)
+ * 
+ * @typedef {Bool | Text | List} VarVal
+ * @typedef {{ [key: Key]: VarVal }} VarValMap The `req` arg of `parse`.
+ * @typedef {{ avi: number, key: Key, opt: Option }} ExitVal 
  * 
  * @callback IsFatal
- * @param {{msg: string, avi: number, opt: Option, key?: Key, val?: VarVal }} err
+ * @param {{ msg: string, avi: number, opt: Option, key?: Key, val?: VarVal }} err
  * @returns {boolean} Whether the parsing should continue (false) or quit (true)
  * @typedef {(k: Key, v: VarVal) => void} Act
- * @typedef {Record<Option, { a: Act, k: Key }>} OptReg internal type
+ * @typedef {{ [opt: Option]: { a: Act, k: Key } }} OptReg internal type
  */
 /** Get OD! @param {OptKit} ok */
 const god = ok => ok === undefined ? [] : isA(ok) ? ok : [ok];
@@ -57,10 +57,10 @@ const god = ok => ok === undefined ? [] : isA(ok) ? ok : [ok];
  * Command line argument parser function
  * @param {string[]} argv Command line arguments array, e.g. `process.argv`
  * @param {number} i Index of current argument being processed, e.g. `2`
- * @param {KeyKitMap} req Options structure definition
- * @param {KeyValMap} res Object to store parsed results
+ * @param {KitMap} req Options structure definition
+ * @param {VarValMap} res Object to store parsed results
  * @param {IsFatal} err Error handler function, return true to quit parsing
- * @returns {number | { avi: number, key: Key, opt: Option }} `ret` is object when an exit option applied, or just `avi`. Maybe you don't need it to return a single `avi` because it seems always equal to `argv.length`
+ * @returns {ExitVal?} `ret` provided when an Exit option applied `@type { avi: number, key: Key, opt: Option }`
  */
 export default function parse(argv, i, req, res, err) {
 	/** @type {Option} */
@@ -177,7 +177,7 @@ export default function parse(argv, i, req, res, err) {
 		// extension :: ASSERT key===set_[opt]
 		if (ext) { ext = false;
 			if (key) { set(s); continue; }
-			if (ask('invalid option', s)) return i;
+			if (ask('invalid option', s)) return null;
 		}
 		// abc
 		if (s.length < 2 || s[0] !== '-') {
@@ -198,26 +198,27 @@ export default function parse(argv, i, req, res, err) {
 			else if (key = rst_[opt]) rst();
 			else if (key = exit_[opt]) return exit(1);
 			else if (key = _key) if (_exit) return exit(0); else set(s);
-			else if (ask('invalid option')) return i;
+			else if (ask('invalid option')) return null;
 			continue;
 		}
 		// -abc
-		if (s[1] !== '-') { 
+		if (s[1] !== '-') {
+			// maybe support '-opt' ? wtf
 			const J = s.length - 1;
 			for (let j = 1; j < J; ++j) {
 				// -ab :: no extension, no anonymous, no exit
 				opt = '-' + s[j];
 				if (key = str_[opt]) { if (noB()) { set(s.slice(j + 1)); continue s; } }
 				else if (key = rst_[opt]) rst();
-				else if (key = exit_[opt]) { if (ask('cannot exit within an argument')) return i; }
-				else if (ask('invalid option')) return i;
+				else if (key = exit_[opt]) { if (ask('cannot exit within an argument')) return null; }
+				else if (ask('invalid option')) return null;
 			}
 			// -c :: no anonymous
 			opt = '-' + s[J];
 			if (key = str_[opt]) ext = noB();
 			else if (key = rst_[opt]) rst();
 			else if (key = exit_[opt]) return exit(1);
-			else if (ask('invalid option')) return i;
+			else if (ask('invalid option')) return null;
 			continue;
 		}
 		// --opt
@@ -228,7 +229,7 @@ export default function parse(argv, i, req, res, err) {
 				if (key = str_[opt = s]) ext = noB();
 				else if (key = rst_[opt]) rst();
 				else if (key = exit_[opt]) return exit(1);
-				else if (ask('invalid option')) return i;
+				else if (ask('invalid option')) return null;
 				continue;
 			} 
 			// --opt=val
@@ -240,9 +241,9 @@ export default function parse(argv, i, req, res, err) {
 					default: set(v); continue; }
 			else if (key = rst_[opt]) t = 'reset';
 			else if (key = exit_[opt]) t = 'exit';
-			else if (ask('invalid option', v)) return i;
+			else if (ask('invalid option', v)) return null;
 			else continue;
-			if (ask(`cannot assign value to ${t} option`, v)) return i;
+			if (ask(`cannot assign value to ${t} option`, v)) return null;
 			continue;
 		}
 		opt = '--';
@@ -251,10 +252,10 @@ export default function parse(argv, i, req, res, err) {
 			const a = res[key], l = argv.length; ++i;
 			if (isA(a)) while (i < l) a.push(argv[i++]);
 			else if (i < l) res[key] = argv[(i = l) - 1];
-			return i;
+			return null;
 		}
-		if (ask('anonymous arguments are not allowed')) return i;
+		if (ask('anonymous arguments are not allowed')) return null;
 	}
 	if (ext) ask('this option requires an argument');
-	return i;
+	return null;
 };
