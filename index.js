@@ -19,6 +19,7 @@ const isA = Array.isArray;
  * @property {OptKit} [off] Options to set `false`
  * @property {OptKit} [not] Options to set `!def`. Call `err` with `null`
  * @property {OptKit} [inv] Options to set `!cur`. Call `err` with `null`
+ * @property {OptKit} [nul] Options to set `null`. (what??)
  * @property {OptKit} [rst] Options to set `def`
  * 
  * @typedef {Object} TextKit you have to use something. but if i say, when ext=0, it is just Bool..hmmmm BUT you can't name a zero size setter, it must be 'set', 'set_set', 'str_num', but not ''(???)
