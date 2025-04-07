@@ -19,7 +19,7 @@ const isA = Array.isArray;
  * @property {OptKit} [off] Options to set `false`
  * @property {OptKit} [not] Options to set `!def`. Call `err` with `null`
  * @property {OptKit} [inv] Options to set `!cur`. Call `err` with `null`
- * @property {OptKit} [nul] Options to set `null`. (what??)
+ * @property {OptKit} [nul] Options to set `null`. (what??) maybe the user wants to cause some NullExceptions
  * @property {OptKit} [rst] Options to set `def`
  * 
  * @typedef {Object} TextKit you have to use something. but if i say, when ext=0, it is just Bool..hmmmm BUT you can't name a zero size setter, it must be 'set', 'set_set', 'str_num', but not ''(???)
@@ -189,9 +189,11 @@ export default function parse(argv, i, req, res, err = console.error, cfg = defa
 		go(vk.sym, sym_);
 	}
 	// process
+	// maxOptLen += 1; // TODO // cfg.eq.length; // wtf is this
 	let ext = false; // this can be a number, so that a multiple extension is naturally available but how do I configure it
 	s: for (; i < argv.length; ++i) {
 		const s = argv[i];
+		// const h = s.length > maxOptLen ? s.slice(0, maxOptLen) : s; // TODO
 		// extension :: ASSERT key===set_[opt]
 		if (ext) { ext = false;
 			if (key) { set(s); continue; }
