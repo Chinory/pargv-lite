@@ -52,6 +52,18 @@ const isA = Array.isArray;
  */
 /** Get OD! @param {OptKit} ok */
 const god = ok => ok === undefined ? [] : isA(ok) ? ok : [ok];
+export const defaults = {
+	/** `'--'` => Consume **all** the rest arguments */
+	dd_all: true, // modify the compile time behavior
+	/** `'-opt'` => `{ opt: '-opt' }` */
+	d_opt: false,
+	/** `'-abc'` => `'-a', '-b', '-c'` */
+	d_abc: true,
+	/** `'-oval'` => `{ opt: '-o', val: 'val' }` */
+	d_o_val: true,
+	/** `'--opt=val'` => `{ opt: '--opt', val: 'val' }` */
+	dd_opt_eq_val: true,
+};
 
 /**
  * Command line argument parser function
@@ -62,7 +74,7 @@ const god = ok => ok === undefined ? [] : isA(ok) ? ok : [ok];
  * @param {IsFatal} err Error handler function, return true to quit parsing
  * @returns {ExitVal?} `ret` provided when an Exit option applied `@type { avi: number, key: Key, opt: Option }`
  */
-export default function parse(argv, i, req, res, err) {
+export default function parse(argv, i, req, res, err, feature = defaults) {
 	/** @type {Option} */
 	let opt = '';
 	/** @type {Key}  */
@@ -201,19 +213,30 @@ export default function parse(argv, i, req, res, err) {
 			else if (ask('invalid option')) return null;
 			continue;
 		}
-		// -abc
+		// -abc or -opt
 		if (s[1] !== '-') {
-			// maybe support '-opt' ? wtf
-			const J = s.length - 1;
-			for (let j = 1; j < J; ++j) {
-				// -ab :: no extension, no anonymous, no exit
-				opt = '-' + s[j];
-				if (key = str_[opt]) { if (noB()) { set(s.slice(j + 1)); continue s; } }
-				else if (key = rst_[opt]) rst();
-				else if (key = exit_[opt]) { if (ask('cannot exit within an argument')) return null; }
-				else if (ask('invalid option')) return null;
+			// -opt
+			if (feature.d_opt) {
+				// WTF maybe support '-opt' ? wtf // maybe should record the max length of '-opt's
 			}
-			// -c :: no anonymous
+			const J = s.length - 1;
+			// -abc
+			if (feature.d_abc) {
+				// -ab :: no extension, no anonymous, no exit
+				for (let j = 1; j < J; ++j) {
+					opt = '-' + s[j];
+					if (key = str_[opt]) { if (noB()) { set(s.slice(j + 1)); continue s; } } // d_o_val
+					else if (key = rst_[opt]) rst();
+					else if (key = exit_[opt]) { if (ask('cannot exit within an argument')) return null; }
+					else if (ask('invalid option')) return null;
+				}
+			} else if (J !== 1) {
+				// opt? key?
+				opt = s;
+				if (ask('invalid option')) return null;
+				continue;
+			}
+			// -c or -o :: no anonymous
 			opt = '-' + s[J];
 			if (key = str_[opt]) ext = noB();
 			else if (key = rst_[opt]) rst();
@@ -223,27 +246,28 @@ export default function parse(argv, i, req, res, err) {
 		}
 		// --opt
 		if (s.length > 2) {
-			const J = s.indexOf('=');
-			if (J < 0) {
-				// --opt ...
-				if (key = str_[opt = s]) ext = noB();
-				else if (key = rst_[opt]) rst();
-				else if (key = exit_[opt]) return exit(1);
-				else if (ask('invalid option')) return null;
+			// --opt=val
+			if (feature.dd_opt_eq_val) eq: { 
+				const J = s.indexOf('=');
+				if (J < 0) break eq;
+				let t; opt = s.slice(0, J);
+				const v = s.slice(J + 1);
+				if (key = str_[opt])
+					switch (t = typeof res[key]) {
+						case 'boolean': break;
+						default: set(v); continue; }
+				else if (key = rst_[opt]) t = 'reset';
+				else if (key = exit_[opt]) t = 'exit';
+				else if (ask('invalid option', v)) return null;
+				else continue;
+				if (ask(`cannot assign value to ${t} option`, v)) return null;
 				continue;
 			} 
-			// --opt=val
-			let t; opt = s.slice(0, J);
-			const v = s.slice(J + 1);
-			if (key = str_[opt])
-				switch (t = typeof res[key]) {
-					case 'boolean': break;
-					default: set(v); continue; }
-			else if (key = rst_[opt]) t = 'reset';
-			else if (key = exit_[opt]) t = 'exit';
-			else if (ask('invalid option', v)) return null;
-			else continue;
-			if (ask(`cannot assign value to ${t} option`, v)) return null;
+			// --opt ...
+			if (key = str_[opt = s]) ext = noB();
+			else if (key = rst_[opt]) rst();
+			else if (key = exit_[opt]) return exit(1);
+			else if (ask('invalid option')) return null;
 			continue;
 		}
 		opt = '--';
