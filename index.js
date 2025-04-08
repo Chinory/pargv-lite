@@ -11,22 +11,22 @@ const isA = Array.isArray;
  * @typedef {Text[]} List only adding or resetting for now. oh this is enough as this is just a configurer not a programming language
  * 
  * @typedef {Object} BoolKit only appearance matters don't give some extensions to it
- * @property {Bool} [def] Variable **def**inition & **def**ault value (pun intended)
- * @property {OptKit} [set] Options to set `!def`. Raise `err` with `undefined`. Identical with `not`. // maybe not like this?? any other behavior?
+ * @property {Bool} [_] ***def***: Variable **def**inition & **def**ault value (pun intended)
+ * @property {OptKit} [set] Options to set !***def***. Raise `err` if is not a `boolean`. Identical with `not`. // maybe not like this?? any other behavior?
+ * @property {OptKit} [rst] Options to set ***def***
+ * @property {OptKit} [nul] Options to set `undefined`. (what??) maybe the user wants to cause some NullExceptions
  * @property {OptKit} [yes] Options to set `true`
  * @property {OptKit} [no]  Options to set `false`
  * @property {OptKit} [on]  Options to set `true`
  * @property {OptKit} [off] Options to set `false`
- * @property {OptKit} [not] Options to set `!def`. Raise `err` with `undefined`
- * @property {OptKit} [inv] Options to set `!cur`. Raise `err` with `undefined`
- * @property {OptKit} [nul] Options to set `undefined`. (what??) maybe the user wants to cause some NullExceptions
- * @property {OptKit} [rst] Options to set `def`
+ * @property {OptKit} [not] Options to set !***def***. Raise `err` if is not a `boolean`
+ * @property {OptKit} [inv] Options to set `!cur`. Raise `err` if is not a `boolean`
  * 
  * @typedef {Object} TextKit you have to use something. but if i say, when ext=0, it is just Bool..hmmmm BUT you can't name a zero size setter, it must be 'set', 'set_set', 'str_num', but not ''(???)
- * @property {Text?} def Variable **def**inition & **def**ault value (pun intended)  can be `null`, maybe this is the only way to provide `Optional<Text>`
+ * @property {Text?} _ ***def***: Variable **def**inition & **def**ault value (pun intended)  can be `null`, maybe this is the only way to provide `Optional<Text>`
  * @property {OptKit} [set] Options to set the raw string slice from the argv
+ * @property {OptKit} [rst] Options to set ***def***. The short name is reasonable, so you don't match `reset` when you search `set`, it IS `rst`
  * @property {OptKit} [nul] Options to set `null`. (what??) maybe the user wants to cause some NullExceptions
- * @property {OptKit} [rst] Options to set `def`. The short name is reasonable, so you don't match `reset` when you search `set`, it IS `rst`
  * @property {number} [ext] Deprecated (it's in setter name now) consume such number of arguments as extension at once. only available when def is an array. so we shall ban the -- for '' the ambiguous feature
  * @property {OptKit} [str] External Options to set a string, can escape the quotes
  * @property {OptKit} [num] External Options to set `Number(arg)`. Raise `err` with `NaN`. Provide a JSON Number Type in other language, naturally
@@ -34,14 +34,16 @@ const isA = Array.isArray;
  * @property {OptKit} [sym] Deprecated External Options to set `Symbol(arg)`. // but since not available in JSON ... // omg it doesn't even available in most of other languages
  * 
  * @typedef {Object} ListKit now you can put 'set', 'set_set', 'str_num', here. OR add another param to parse() to define how to initialize a var from raw string. YES! It's not my duty! Something like `{ num: v => { if (isNaN(v = Number(v)) throw 'not a number'; return v; } }`, ` { i64: v => { throw 'This is in JAVASCRIPT you Rust guy' } }`, ` { bigint: BigInt } // it throws`. AND throw directly if there's a mistake in `req` as it's a compile time error not a runtime one
- * @property {List} def there is no `Optional<List>` for sure because it's stupid for an emptiable container. All set option in `TextKit` is available to push the value into the array
+ * @property {List} _ ***def***: there is no `Optional<List>` for sure because it's stupid for an emptiable container. All set option in `TextKit` is available to push the value into the array
  * @property {OptKit} [set] Options to set the raw string slice from the argv
- * @property {OptKit} [rst] Options to set the array back to `def`
- * 
+ * @property {OptKit} [rst] Options to set the array back to ***def***: `_`
+ * @property {OptKit} [str] External Options to set a string, can escape the quotes
+ * @property {OptKit} [num] External Options to set `Number(arg)`. Raise `err` with `NaN`. Provide a JSON Number Type in other language, naturally
+
  * @typedef {OptDef | OptDef[]} ExitKit there are only two types of container in JSON: list, dict. And this the list one
  * @typedef {BoolKit | TextKit | ListKit} VarKit
  * @typedef {{ [key: Key]: ExitKit | VarKit }} KitMap The `req` arg of `parse`. `ExitKit` has higher priority (extension is even higher. '--' is highest)
- * @typedef {{ def?: VarVal, [cmd: string]: OptKit }} IVarKit
+ * @typedef {{ _?: VarVal, [cmd: string]: OptKit }} IVarKit
  * 
  * @typedef {Bool | Text | List} VarVal // `undefined` is from `Bool`, `null` is from `Text`
  * @typedef {{ [key: Key]: VarVal }} VarValMap The `req` arg of `parse`.
@@ -110,12 +112,12 @@ export default function parse(argv, i, req, res, err = console.error, cfg = Conf
 		if (isA(cur)) cur.push(val); else res[key] = val;
 	};
 	const rst = () => {
-		const def = req[key].def;
+		const def = req[key]._;
 		res[key] = isA(def) ? def.slice() : def;
 	};
 	const noB = () => {
 
-		const def = req[key].def;
+		const def = req[key]._;
 		if (typeof def === 'boolean') {
 			res[key] = !def;
 			return false;
@@ -129,9 +131,9 @@ export default function parse(argv, i, req, res, err = console.error, cfg = Conf
 
 	const a_b1 = k => { res[k] = true; }
 	const a_b0 = k => { res[k] = false; }
-	const a_bn = k => { res[k] = req[k].def; }
+	const a_bn = k => { res[k] = req[k]._; }
 	const a_bi = k => { 
-		const def = res[k].def;
+		const def = res[k]._;
 
 		res[k] = !res[k];
 	}
