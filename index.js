@@ -41,6 +41,7 @@ const isA = Array.isArray;
  * @typedef {OptDef | OptDef[]} ExitKit there are only two types of container in JSON: list, dict. And this the list one
  * @typedef {BoolKit | TextKit | ListKit} VarKit
  * @typedef {{ [key: Key]: ExitKit | VarKit }} KitMap The `req` arg of `parse`. `ExitKit` has higher priority (extension is even higher. '--' is highest)
+ * @typedef {{ def?: VarVal, [cmd: string]: OptKit }} IVarKit
  * 
  * @typedef {Bool | Text | List} VarVal // `undefined` is from `Bool`, `null` is from `Text`
  * @typedef {{ [key: Key]: VarVal }} VarValMap The `req` arg of `parse`.
