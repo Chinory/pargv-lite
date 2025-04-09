@@ -12,13 +12,12 @@
  * 
  * @typedef {Object} BoolKit only appearance matters don't give some extensions to it
  * @property {Bool} [_] ***def***: Variable **def**inition & **def**ault value (pun intended)
- * @property {OptKit} [set] Options to set !***def***. Raise `err` if is not a `boolean`. Identical with `not`. // maybe not like this?? any other behavior?
+ * @property {OptKit} [not] Options to set !***def***. Raise `err` if is not a `boolean`
+ * @property {OptKit} [inv] Options to set `!cur`. Raise `err` if is not a `boolean`
  * @property {OptKit} [yes] Options to set `true`
  * @property {OptKit} [no]  Options to set `false`
  * @property {OptKit} [on]  Options to set `true`
  * @property {OptKit} [off] Options to set `false`
- * @property {OptKit} [not] Options to set !***def***. Raise `err` if is not a `boolean`
- * @property {OptKit} [inv] Options to set `!cur`. Raise `err` if is not a `boolean`
  * @property {OptKit} [nul] Options to set `undefined`. (what??) maybe the user wants to cause some NullExceptions
  * @property {OptKit} [rst] Options to set ***def***
  * 
