@@ -156,7 +156,6 @@ runTest('Exit options', () => {
   // Test exit on command
   const res = {};
   const ret = parse(['node', 'script.js', 'build', '--extra'], 2, req, res, errorHandler);
-  if (typeof ret !== 'object') throw ret;
   assert.strictEqual(ret.key, 'command');
   assert.strictEqual(ret.opt, 'build');
   assert.strictEqual(ret.i, 3);
@@ -212,7 +211,6 @@ runTest('Default naming', () => {
   // Test that the exit option works using the key as name
   const res1 = {};
   const ret1 = parse(['node', 'script.js', 'help'], 2, req1, res1, errorHandler);
-  if (typeof ret1 !== 'object') throw ret1;
   assert.strictEqual(ret1.key, 'help');
   assert.strictEqual(ret1.opt, 'help');
   
@@ -311,7 +309,6 @@ runTest('Exit on anonymous arguments', () => {
   // Test exit on command
   const res = {};
   const ret = parse(['node', 'script.js', '--help', '1.txt', '2.txt'], 2, req, res, errorHandler);
-  if (typeof ret !== 'object') throw ret;
   assert.strictEqual(ret.key, 'files');
   assert.strictEqual(ret.opt, '1.txt');
   assert.strictEqual(ret.i, 3);
