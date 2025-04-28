@@ -2,8 +2,8 @@
 import parse from './index.js';
 import assert from 'assert';
 
-// Test suite for pargv-lite
-console.log('🧪 Running pargv-lite tests...');
+// Test suite for json-parse-argv
+console.log('🧪 Running json-parse-argv tests...');
 
 // Helper function to run tests
 function runTest(name, fn) {
@@ -19,7 +19,7 @@ function runTest(name, fn) {
 
 // Error handler for tests
 const errorHandler = (err) => {
-  console.log(`   Test error: ${err.msg} at position ${err.avi} for option ${err.opt}`);
+  console.log(`   Test error: ${err.msg} at position ${err.i} for option ${err.opt}`);
   return false; // Continue parsing
 };
 
@@ -159,7 +159,7 @@ runTest('Exit options', () => {
   if (typeof ret !== 'object') throw ret;
   assert.strictEqual(ret.key, 'command');
   assert.strictEqual(ret.opt, 'build');
-  assert.strictEqual(ret.avi, 3);
+  assert.strictEqual(ret.i, 3);
 });
 
 // TEST 6: Combined short options
@@ -314,7 +314,7 @@ runTest('Exit on anonymous arguments', () => {
   if (typeof ret !== 'object') throw ret;
   assert.strictEqual(ret.key, 'files');
   assert.strictEqual(ret.opt, '1.txt');
-  assert.strictEqual(ret.avi, 3);
+  assert.strictEqual(ret.i, 3);
 });
 
 console.log('🎉 All tests completed!'); 

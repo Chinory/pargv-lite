@@ -1,6 +1,6 @@
 {
-  "name": "pargv-lite",
-  "version": "3.3.1",
+  "name": "json-parse-argv",
+  "version": "1.0.0",
   "description": "A lightning-fast, single-pass command line argument parser with structure validation",
   "main": "index.js",
   "type": "module",
@@ -24,10 +24,10 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Chinory/pargv-lite.git"
+    "url": "git+https://github.com/Chinory/json-parse-argv.git"
   },
   "bugs": {
-    "url": "https://github.com/Chinory/pargv-lite/issues"
+    "url": "https://github.com/Chinory/json-parse-argv/issues"
   },
-  "homepage": "https://github.com/Chinory/pargv-lite#readme"
+  "homepage": "https://github.com/Chinory/json-parse-argv#readme"
 }

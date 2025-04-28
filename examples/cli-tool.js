@@ -99,16 +99,16 @@ function main() {
   if (typeof ret === 'object') {
     // When a command is found via the exit mechanism,
     // ret contains {i, key, opt} where:
-    // - ret.avi is the index to resume parsing from
+    // - ret.i is the index to resume parsing from
     // - ret.key is the variable name in req that triggered the exit (here: 'command')
     // - ret.opt is the value that matched (here: the command name itself)
     
     switch (ret.opt) {
       case 'build':
-        handleBuildCommand(ret.avi);
+        handleBuildCommand(ret.i);
         break;
       case 'serve':
-        handleServeCommand(ret.avi);
+        handleServeCommand(ret.i);
         break;
       case 'test':
         console.log('Running tests...');

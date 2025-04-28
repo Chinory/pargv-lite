@@ -17,7 +17,7 @@ const isA = Array.isArray;
  * @typedef {Record<KeyStr, VarVal>} KeyValMap `res`
  * 
  * @callback IsFatal
- * @param {{msg: string, avi: number, opt: OptStr, key?: KeyStr, val?: VarVal }} err
+ * @param {{msg: string, i: number, opt: OptStr, key?: KeyStr, val?: VarVal }} err
  * @returns {boolean} Whether the parsing should continue (false) or quit (true)
  * @typedef {Record<OptStr, KeyStr>} OptKeyMap internal type
  */
@@ -30,7 +30,7 @@ const god = ok => ok === undefined ? [] : isA(ok) ? ok : [ok];
  * @param {KeyKitMap} req Options structure definition
  * @param {KeyValMap} res Object to store parsed results
  * @param {IsFatal} err Error handler function, return true to quit parsing
- * @returns {number | { avi: number, key: KeyStr, opt: OptStr }} `ret` is object when an exit option applied, or just `avi`
+ * @returns {{ i: number, key: KeyStr, opt: OptStr }?} `ret` is object when an exit option applied
  */
 export default function parse(argv, i, req, res, err) {
 	/** @type {OptStr} option */
@@ -51,8 +51,8 @@ export default function parse(argv, i, req, res, err) {
 			return false;
 		 } return true;
 	}, k = o => o == null ? key : o, // undefined is... well
-	ask = (msg, val) => err({msg, avi: i, opt, key, val}),
-	exit = c => ({ avi: i+c, key, opt });
+	ask = (msg, val) => err({msg, i: i, opt, key, val}),
+	exit = c => ({ i: i+c, key, opt });
 	// prepare
 	/** @type {OptKeyMap} */
 	const set_ = {}, rst_ = {}, exit_ = {};
