@@ -114,7 +114,7 @@ parse(argv, i, req, res, err)
 ### Return Value
 
 The function returns either:
-- A number (the next index after parsing completed normally)
+- `null`
 - An object `{ i, key, opt }` when exiting early due to an exit option, where:
   - `i`: The next index to resume parsing from
   - `key`: The variable name in the req object that triggered the exit

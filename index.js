@@ -84,7 +84,7 @@ export default function parse(argv, i, req, res, err) {
 		// extension :: ASSERT key===set_[opt]
 		if (ext) { ext = false;
 			if (key) { set(s); continue; }
-			if (ask('invalid option', s)) return i;
+			if (ask('invalid option', s)) return null;
 		}
 		// abc
 		if (s.length < 2 || s[0] !== '-') {
@@ -92,7 +92,7 @@ export default function parse(argv, i, req, res, err) {
 			else if (key = rst_[opt]) rst();
 			else if (key = exit_[opt]) return exit(1);
 			else if (key = _key) if (_exit) return exit(0); else set(s);
-			else if (ask('invalid option')) return i;
+			else if (ask('invalid option')) return null;
 			continue;
 		}
 		// -abc
@@ -103,15 +103,15 @@ export default function parse(argv, i, req, res, err) {
 				opt = '-' + s[j];
 				if (key = set_[opt]) { if (noB()) { set(s.slice(j + 1)); continue S; } }
 				else if (key = rst_[opt]) rst();
-				else if (key = exit_[opt]) { if (ask('cannot exit within an argument')) return i; }
-				else if (ask('invalid option')) return i;
+				else if (key = exit_[opt]) { if (ask('cannot exit within an argument')) return null; }
+				else if (ask('invalid option')) return null;
 			}
 			// -c :: no anonymous
 			opt = '-' + s[J];
 			if (key = set_[opt]) ext = noB();
 			else if (key = rst_[opt]) rst();
 			else if (key = exit_[opt]) return exit(1);
-			else if (ask('invalid option')) return i;
+			else if (ask('invalid option')) return null;
 			continue;
 		}
 		// --opt
@@ -122,7 +122,7 @@ export default function parse(argv, i, req, res, err) {
 				if (key = set_[opt = s]) ext = noB();
 				else if (key = rst_[opt]) rst();
 				else if (key = exit_[opt]) return exit(1);
-				else if (ask('invalid option')) return i;
+				else if (ask('invalid option')) return null;
 				continue;
 			} 
 			// --opt=val
@@ -134,9 +134,9 @@ export default function parse(argv, i, req, res, err) {
 					default: set(v); continue; }
 			else if (key = rst_[opt]) t = 'reset';
 			else if (key = exit_[opt]) t = 'exit';
-			else if (ask('invalid option', v)) return i;
+			else if (ask('invalid option', v)) return null;
 			else continue;
-			if (ask(`cannot assign value to ${t} option`, v)) return i;
+			if (ask(`cannot assign value to ${t} option`, v)) return null;
 			continue;
 		}
 		opt = '--';
@@ -145,10 +145,10 @@ export default function parse(argv, i, req, res, err) {
 			const a = res[key], l = argv.length; ++i;
 			if (isA(a)) while (i < l) a.push(argv[i++]);
 			else if (i < l) res[key] = argv[(i = l) - 1];
-			return i;
+			return null;
 		}
-		if (ask('anonymous arguments are not allowed')) return i;
+		if (ask('anonymous arguments are not allowed')) return null;
 	}
 	if (ext) ask('this option requires an argument');
-	return i;
+	return null;
 };
