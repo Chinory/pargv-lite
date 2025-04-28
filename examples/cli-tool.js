@@ -95,8 +95,8 @@ function main() {
     console.log('Debug mode enabled');
   }
   
-  // Handle subcommands - check if ret is an object (exit case)
-  if (typeof ret === 'object') {
+  // Handle subcommands
+  if (ret) {
     // When a command is found via the exit mechanism,
     // ret contains {i, key, opt} where:
     // - ret.i is the index to resume parsing from
